@@ -1,0 +1,305 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: deliveryterms v1.7.0\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2025-12-31 00:00+0000\n"
+"PO-Revision-Date: 2025-12-31 00:00+0000\n"
+"Last-Translator: \n"
+"Language-Team: \n"
+"Language: pt_PT\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+#: inc/config.class.php:227
+msgid "Select who should generate the pdf"
+msgstr "Selecione quem deve gerar o PDF"
+
+#: inc/config.class.php:234
+msgid "The user who generates the document"
+msgstr "O utilizador que gera o documento"
+
+#: inc/config.class.php:148
+msgid "Document title"
+msgstr "Título do documento"
+
+#: inc/config.class.php:149
+msgid "You can use {owner} here."
+msgstr "Pode usar {owner} aqui."
+
+#: inc/config.class.php:182
+msgid "You can use {owner} or {admin} here."
+msgstr "Pode usar {owner} ou {admin} aqui."
+
+#: setup.php:11
+#: inc/profile.class.php:33
+#: inc/profile.class.php:87
+#: inc/generate.class.php:23
+msgid "Delivery Terms"
+msgstr "Termos de Entrega"
+
+#: setup.php:48
+msgid "This plugin requires GLPI >= %1$s and < %2$s"
+msgstr "Este plugin requer o GLPI >= %1$s e < %2$s"
+
+#: inc/config.class.php:34
+msgid "Templates settings"
+msgstr "Definições de modelos"
+
+#: inc/config.class.php:45
+msgid "Email settings"
+msgstr "Definições de e-mail"
+
+#: inc/profile.class.php:99
+msgid "Save"
+msgstr "Guardar"
+
+#: inc/generate.class.php:157
+msgid "Protocol Generation Options"
+msgstr "Opções de geração de protocolos"
+
+#: inc/generate.class.php:174
+msgid "Create Protocol"
+msgstr "Criar protocolo"
+
+#: inc/generate.class.php:187
+msgid "Add Manual Field"
+msgstr "Adicionar campo manual"
+
+#: inc/generate.class.php:386
+msgid "Generated Protocols History"
+msgstr "Histórico de protocolos gerados"
+
+#: inc/config.class.php:115
+msgid "Portrait"
+msgstr "Retrato"
+
+#: inc/config.class.php:115
+msgid "Landscape"
+msgstr "Paisagem"
+
+#: inc/config.class.php:123
+msgid "Crear Plantilla"
+msgstr "Criar modelo"
+
+#: inc/config.class.php:123
+msgid "Editar Plantilla"
+msgstr "Editar modelo"
+
+#: inc/config.class.php:128
+msgid "Nombre de la plantilla"
+msgstr "Nome do modelo"
+
+#: inc/config.class.php:157
+msgid "You can use {owner}, {admin}, {reg_num}, {title} or {category} here."
+msgstr "Pode usar {owner}, {admin}, {reg_num}, {title} ou {category} aqui."
+
+# Added translations for newly wrapped UI labels
+
+msgid "Templates"
+msgstr "Modelos"
+
+msgid "Font"
+msgstr "Fonte"
+
+msgid "Delete file"
+msgstr "Eliminar ficheiro"
+
+msgid "Font size"
+msgstr "Tamanho da fonte"
+
+msgid "Ciudad"
+msgstr "Cidade"
+msgid "Word breaking"
+msgstr "Quebra de palavras"
+
+msgid "On"
+msgstr "Ativado"
+
+msgid "Off"
+msgstr "Desativado"
+
+msgid "Upper Content"
+msgstr "Conteúdo superior"
+
+msgid "Logo width (px)"
+msgstr "Largura do logótipo (px)"
+
+msgid "Logo height (px)"
+msgstr "Altura do logótipo (px)"
+
+msgid "Enable email autosending"
+msgstr "Ativar envio automático de e-mail"
+
+#: inc/config.class.php:157
+msgid "Contenido"
+msgstr "Conteúdo"
+
+#: inc/config.class.php:162
+msgid "Footer"
+msgstr "Rodapé"
+
+#: inc/config.class.php:165
+msgid "Orientación"
+msgstr "Orientação"
+
+#: inc/config.class.php:170
+msgid "Número de serie"
+msgstr "Número de série"
+
+#: inc/config.class.php:175
+msgid "Logo"
+msgstr "Logótipo"
+
+#: inc/config.class.php:193
+msgid "Email template"
+msgstr "Modelo de e-mail"
+
+#: inc/config.class.php:344
+msgid "Template name"
+msgstr "Nome do modelo"
+
+#: inc/config.class.php:345
+msgid "Email subject"
+msgstr "Assunto do e-mail"
+
+#: inc/config.class.php:346
+msgid "Email content"
+msgstr "Conteúdo do e-mail"
+
+#: inc/config.class.php:347
+msgid "Add emails (separate with ;)"
+msgstr "Adicionar e-mails (separar com ;)"
+
+#: inc/config.class.php:267
+msgid "Settings saved"
+msgstr "Definições guardadas"
+
+#: inc/config.class.php:316
+msgid "Template deleted"
+msgstr "Modelo eliminado"
+
+#: inc/config.class.php:375
+msgid "Email settings saved"
+msgstr "Definições de e-mail guardadas"
+
+#: inc/config.class.php:407
+msgid "Email template deleted"
+msgstr "Modelo de e-mail eliminado"
+
+#: inc/generate.class.php:161
+msgid "Template"
+msgstr "Modelo"
+
+#: inc/generate.class.php:170
+msgid "Note"
+msgstr "Nota"
+
+#: inc/generate.class.php:171
+msgid "Add a custom note to this protocol"
+msgstr "Adicionar uma nota personalizada a este protocolo"
+
+#: inc/generate.class.php:186
+msgid "Select Items to Include"
+msgstr "Selecionar itens a incluir"
+
+#: inc/generate.class.php:195
+msgid "Type"
+msgstr "Tipo"
+
+#: inc/generate.class.php:196
+msgid "Manufacturer"
+msgstr "Fabricante"
+
+#: inc/generate.class.php:197
+msgid "Model"
+msgstr "Modelo"
+
+#: inc/generate.class.php:198
+msgid "Name"
+msgstr "Nome"
+
+#: inc/generate.class.php:199
+msgid "State"
+msgstr "Estado"
+
+#: inc/generate.class.php:200
+msgid "Serial number"
+msgstr "Número de série"
+
+#: inc/generate.class.php:201
+msgid "Inventory number"
+msgstr "Número de inventário"
+
+#: inc/generate.class.php:202
+msgid "Comments"
+msgstr "Comentários"
+
+#: inc/generate.class.php:333
+msgid "Send Protocol by Email"
+msgstr "Enviar protocolo por e-mail"
+
+#: inc/generate.class.php:345
+msgid "Manual Entry"
+msgstr "Entrada manual"
+
+#: inc/generate.class.php:357
+msgid "Use Email Template"
+msgstr "Usar modelo de e-mail"
+
+#: inc/generate.class.php:376
+msgid "Cancel"
+msgstr "Cancelar"
+
+#: inc/generate.class.php:377
+msgid "Send"
+msgstr "Enviar"
+
+#: inc/generate.class.php:394
+msgid "Are you sure you want to delete selected items?"
+msgstr "Tem a certeza de que quer eliminar os itens selecionados?"
+
+#: inc/generate.class.php:394
+msgid "Delete Selected"
+msgstr "Eliminar selecionados"
+
+#: inc/generate.class.php:411
+msgid "Creation Date"
+msgstr "Data de criação"
+
+#: inc/generate.class.php:412
+msgid "Download"
+msgstr "Descarregar"
+
+#: inc/generate.class.php:413
+msgid "Creator"
+msgstr "Criador"
+
+#: inc/generate.class.php:414
+msgid "Comment"
+msgstr "Comentário"
+
+#: inc/generate.class.php:415
+msgid "Action"
+msgstr "Ação"
+
+#: inc/generate.class.php:454
+msgid "Document not found"
+msgstr "Documento não encontrado"
+
+#: inc/generate.class.php:467
+msgid "Send Email"
+msgstr "Enviar e-mail"
+
+#: inc/generate.class.php:714
+msgid "Failed to send email"
+msgstr "Falha ao enviar o e-mail"
+
+#: inc/generate.class.php:717
+msgid "Email sent"
+msgstr "E-mail enviado"
+
+#: inc/generate.class.php:765
+msgid "No recipients specified"
+msgstr "Nenhum destinatário especificado"

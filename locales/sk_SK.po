@@ -1,0 +1,35 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: deliveryterms v1.7.0\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2022-05-06 15:07+0000\n"
+"PO-Revision-Date: 2024-02-06 15:40+0100\n"
+"Last-Translator: \n"
+"Language-Team: peter.tuharsky@gmail.com\n"
+"Language: sk_SK\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=3; plural=(n==1 ? 0 : n>=2 && n<=4 ? 1 : 2);\n"
+"X-Generator: Poedit 3.2.2\n"
+"X-Poedit-Basepath: .\n"
+
+#: inc/config.class.php:227
+msgid "Select who should generate the pdf"
+msgstr "Vyberte, kto má vytvoriť PDF"
+
+#: inc/config.class.php:234
+msgid "The user who generates the document"
+msgstr "Používateľ, ktorý vytvára tento dokument"
+
+#: inc/config.class.php:148
+msgid "Document title"
+msgstr "Nadpis dokumentu"
+
+#: inc/config.class.php:149
+msgid "You can use {owner} here."
+msgstr "Môžete tu použiť premennú {owner}"
+
+#: inc/config.class.php:182
+msgid "You can use {owner} or {admin} here."
+msgstr "Môžete tu použiť premennú {owner} alebo {admin} "
