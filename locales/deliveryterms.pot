@@ -53,11 +53,11 @@ msgid "Save"
 msgstr ""
 
 #: inc/generate.class.php:157
-msgid "Protocol Generation Options"
+msgid "Term Generation Options"
 msgstr ""
 
 #: inc/generate.class.php:174
-msgid "Create Protocol"
+msgid "Create Term"
 msgstr ""
 
 #: inc/generate.class.php:187
@@ -65,7 +65,7 @@ msgid "Add Manual Field"
 msgstr ""
 
 #: inc/generate.class.php:386
-msgid "Generated Protocols History"
+msgid "Generated Terms History"
 msgstr ""
 
 #: inc/config.class.php:115

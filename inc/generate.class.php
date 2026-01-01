@@ -383,7 +383,7 @@ class PluginDeliverytermsGenerate extends CommonDBTM {
 
         // --- HISTORY ---
         echo "<div class='card shadow-sm mt-4'>";
-        echo "  <div class='card-header fw-bold'><i class='fas fa-history'></i> " . __('Generated Protocols History', 'deliveryterms') . "</div>";
+        echo "  <div class='card-header fw-bold'><i class='fas fa-history me-1'></i> " . __('Generated Terms History', 'deliveryterms') . "</div>";
         echo "  <form method='post' name='docs_form' action='".$CFG_GLPI["root_doc"]."/plugins/deliveryterms/front/generate.form.php'>";
         echo    Html::hidden('_glpi_csrf_token', ['value' => Session::getNewCSRFToken()]);
         
