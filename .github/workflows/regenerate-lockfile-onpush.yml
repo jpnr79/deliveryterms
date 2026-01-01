@@ -1,0 +1,62 @@
+name: Regenerate package-lock on push
+
+on:
+  push:
+    branches:
+      - 'ci/self-hosted-improve'
+
+permissions:
+  contents: write
+
+jobs:
+  update-lockfile:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+
+      - name: Install dependencies (regenerate lockfile)
+        run: |
+          npm install --no-audit --no-fund --legacy-peer-deps
+
+      - name: Check for changes
+        id: gitdiff
+        run: |
+          git status --porcelain
+          if git diff --quiet -- package-lock.json; then
+            echo "changed=false" >> $GITHUB_OUTPUT
+          else
+            echo "changed=true" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Abort if no change
+        if: steps.gitdiff.outputs.changed == 'false'
+        run: |
+          echo "No changes to package-lock.json; nothing to commit."
+
+      - name: Commit and push package-lock.json
+        if: steps.gitdiff.outputs.changed == 'true'
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add package-lock.json
+          git commit -m "chore(ci): update package-lock.json"
+          git push https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }} HEAD:${{ github.ref_name }}
+
+      - name: Create PR comment with run URL
+        if: steps.gitdiff.outputs.changed == 'true'
+        uses: actions/github-script@v6
+        with:
+          script: |
+            const prNum = (await github.rest.pulls.list({ owner: context.repo.owner, repo: context.repo.repo, head: `${context.repo.owner}:${github.ref_name}` })).data[0]?.number;
+            if (prNum) {
+              await github.rest.issues.createComment({ owner: context.repo.owner, repo: context.repo.repo, issue_number: prNum, body: `Updated package-lock.json in branch ${github.ref_name}. See workflow run: ${process.env.GITHUB_SERVER_URL}/${context.repo.owner}/${context.repo.repo}/actions/runs/${process.env.GITHUB_RUN_ID}` });
+            }
