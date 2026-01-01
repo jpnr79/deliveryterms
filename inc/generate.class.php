@@ -647,18 +647,7 @@ class PluginDeliverytermsGenerate extends CommonDBTM {
                 'document_type' => $title_template
             ]);
 
-            // Audit record: protocol created
-            $protocol_row_id = $DB->insertId();
-            try {
-                $DB->insert('glpi_plugin_deliveryterms_audit', [
-                    'action' => 'protocol_created',
-                    'user_id' => Session::getLoginUserID() ?: null,
-                    'protocol_id' => $protocol_row_id,
-                    'details' => json_encode(['name' => $doc_name, 'protocol_number' => $protocol_number])
-                ]);
-            } catch (\Throwable $e) {
-                error_log('[deliveryterms] Failed to insert audit record for protocol create: ' . $e->getMessage());
-            }
+
 
             $DB->insert('glpi_documents_items', [
                 'documents_id' => $doc_id, 'items_id' => $id, 'itemtype' => 'User',
@@ -717,18 +706,6 @@ class PluginDeliverytermsGenerate extends CommonDBTM {
 
         if (isset($_POST['docnumber']) && is_array($_POST['docnumber'])) {
             foreach ($_POST['docnumber'] as $del_key) {
-                // Audit record: protocol delete (document id)
-                try {
-                    $DB->insert('glpi_plugin_deliveryterms_audit', [
-                        'action' => 'protocol_deleted',
-                        'user_id' => Session::getLoginUserID() ?: null,
-                        'protocol_id' => null,
-                        'details' => json_encode(['document_id' => $del_key])
-                    ]);
-                } catch (\Throwable $e) {
-                    error_log('[deliveryterms] Failed to insert audit record for protocol delete: ' . $e->getMessage());
-                }
-
                 // Remove plugin protocol entry
                 $DB->delete('glpi_plugin_deliveryterms_protocols', ['document_id' => $del_key]);
                 // Restore previous behavior: always delete underlying document
@@ -765,20 +742,11 @@ class PluginDeliverytermsGenerate extends CommonDBTM {
             if (!empty($candidate) && is_readable($candidate) && is_file($candidate)) {
                 try {
                     $nmail->addAttachment($candidate, $docFilename);
-                    // Audit: email attachment added
-                    $DB->insert('glpi_plugin_deliveryterms_audit', [
-                        'action' => 'email_attachment_added',
-                        'user_id' => Session::getLoginUserID() ?: null,
-                        'protocol_id' => $doc_id,
-                        'details' => json_encode(['path' => $candidate, 'filename' => $docFilename])
-                    ]);
                 } catch (\Throwable $e) {
                     error_log('[deliveryterms] Failed to attach document: ' . $e->getMessage());
-                    try { $DB->insert('glpi_plugin_deliveryterms_audit', ['action' => 'email_attachment_failed', 'user_id' => Session::getLoginUserID() ?: null, 'protocol_id' => $doc_id, 'details' => json_encode(['error' => $e->getMessage()])]); } catch (\Throwable $ex) {}
                 }
             } else {
                 error_log('[deliveryterms] Attachment skipped; file not found or unreadable: ' . GLPI_VAR_DIR . '/' . $docFilepath);
-                try { $DB->insert('glpi_plugin_deliveryterms_audit', ['action' => 'email_attachment_missing', 'user_id' => Session::getLoginUserID() ?: null, 'protocol_id' => $doc_id, 'details' => json_encode(['filepath' => $docFilepath])]); } catch (\Throwable $ex) {}
             }
         }
         

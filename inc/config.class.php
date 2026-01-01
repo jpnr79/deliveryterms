@@ -268,14 +268,12 @@ class PluginDeliverytermsConfig extends CommonDBTM {
 
         if ($mode == 0) {
             $DB->insert('glpi_plugin_deliveryterms_config', $fields);
-            // Auditing is disabled (table removed); keep note in logs
-            error_log('[deliveryterms] Audit: config_created (not recorded because audit table has been removed)');
+
         } else {
             // Capture previous values before update for traceability
             $old = $DB->request(['FROM' => 'glpi_plugin_deliveryterms_config', 'WHERE' => ['id' => $mode]])->current();
             $DB->update('glpi_plugin_deliveryterms_config', $fields, ['id' => $mode]);
-            // Auditing is disabled (table removed); keep note in logs
-            error_log('[deliveryterms] Audit: config_updated (not recorded because audit table has been removed)');
+
         }
         Session::addMessageAfterRedirect(__('Settings saved', 'deliveryterms'));
 	}
@@ -326,8 +324,6 @@ class PluginDeliverytermsConfig extends CommonDBTM {
 		global $DB;
 		if (isset($_POST['conf_id'])) {
 			$confId = (int)$_POST['conf_id'];
-			// Auditing disabled: log locally
-			error_log('[deliveryterms] Audit: config_deleted (not recorded because audit table has been removed) id=' . $confId);
 			$DB->delete('glpi_plugin_deliveryterms_config', ['id' => $confId]);
 			Session::addMessageAfterRedirect(__('Template deleted', 'deliveryterms'));
 		}
@@ -385,13 +381,11 @@ class PluginDeliverytermsConfig extends CommonDBTM {
 
 		if ($email_edit_id == 0) {
 			$DB->insert('glpi_plugin_deliveryterms_emailconfig', $fields);
-			// Auditing disabled: log
-			error_log('[deliveryterms] Audit: email_config_created (not recorded because audit table has been removed) tname=' . ($fields['tname'] ?? ''));
+			$DB->insert('glpi_plugin_deliveryterms_emailconfig', $fields);
 		} else {
 			// Capture previous values
 			$old = $DB->request(['FROM' => 'glpi_plugin_deliveryterms_emailconfig', 'WHERE' => ['id' => $email_edit_id]])->current();
 			$DB->update('glpi_plugin_deliveryterms_emailconfig', $fields, ['id' => $email_edit_id]);
-			error_log('[deliveryterms] Audit: email_config_updated (not recorded because audit table has been removed) id=' . $email_edit_id);
 		}
 		Session::addMessageAfterRedirect(__('Email settings saved', 'deliveryterms'));
 	}
