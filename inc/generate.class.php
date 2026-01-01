@@ -154,7 +154,7 @@ class PluginDeliverytermsGenerate extends CommonDBTM {
         // CHANGE: Only show generation options if user has 'make_access'
         if ($can_create) {
             echo "<div class='card mb-4 shadow-sm'>";
-            echo "  <div class='card-header fw-bold'>".__('Protocol Generation Options', 'deliveryterms')."</div>";
+            echo "  <div class='card-header fw-bold'>".__('Term Generation Options', 'deliveryterms')."</div>";
             echo "  <div class='card-body bg-light'>";
             echo "      <div class='row g-3 align-items-end'>"; 
             echo "          <div class='col-md-4'>";
@@ -171,7 +171,7 @@ class PluginDeliverytermsGenerate extends CommonDBTM {
             echo "              <input type='text' name='notes' class='form-control' placeholder='".__('Add a custom note to this protocol', 'deliveryterms')."'>";
             echo "          </div>";
             echo "          <div class='col-md-3'>";
-            echo "              <button type='submit' name='generate' class='btn btn-primary w-100'><i class='fas fa-plus'></i> ".__('Create Protocol', 'deliveryterms')."</button>";
+            echo "              <button type='submit' name='generate' class='btn btn-primary w-100'><i class='fas fa-plus me-1'></i> ".__('Create Term', 'deliveryterms')."</button>";
             echo "          </div>";
             echo "      </div>";
             echo "  </div>";

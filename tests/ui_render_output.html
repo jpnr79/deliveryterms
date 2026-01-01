@@ -1,0 +1,45 @@
+<div class='container-fluid p-3'><form method='post' name='user_field1900655209' id='user_field1900655209' action="/plugins/deliveryterms/front/generate.form.php"><div class='card mb-4 shadow-sm'>  <div class='card-header fw-bold'>Term Generation Options</div>  <div class='card-body bg-light'>      <div class='row g-3 align-items-end'>          <div class='col-md-4'>              <label class='form-label fw-bold'>Template</label>              <select required name='list' class='form-select'><option value="3">Termo de Entrega</option>              </select>          </div>          <div class='col-md-5'>              <label class='form-label fw-bold'>Note</label>              <input type='text' name='notes' class='form-control' placeholder='Add a custom note to this protocol'>          </div>          <div class='col-md-3'>              <button type='submit' name='generate' class='btn btn-primary w-100'><i class='fas fa-plus me-1'></i> Create Term</button>          </div>      </div>  </div></div><div class='card shadow-sm mb-4'>  <div class='card-header bg-white d-flex justify-content-between align-items-center py-2'>      <h5 class='mb-0'><i class='fas fa-laptop'></i> Select Items to Include</h5>      <button type='button' class='btn btn-success fw-bold addNewRow' id='addNewRow'><i class='fas fa-plus-circle'></i> Add Manual Field</button>  </div>  <div class='table-responsive'>      <table class='table table-hover align-middle mb-0' id='additional_table'>          <thead class='table-light text-center'>              <tr>                  <th width='40'><input type='checkbox' class='form-check-input checkall'></th>                  <th>Type</th>                  <th>Manufacturer</th>                  <th>Model</th>                  <th>Name</th>                  <th>State</th>                  <th>Serial number</th>                  <th>Inventory number</th>                  <th width='200'>Comments</th>              </tr>          </thead>          <tbody>          </tbody>      </table>  </div></div><input type="hidden" name="_glpi_csrf_token" value="88581d2b08950e110d3638a26877e35a8f8c52b026d993527b99dd818966ac37" /></form>
+        <div class='modal fade' id='motus' tabindex='-1' aria-hidden='true'>
+          <div class='modal-dialog modal-lg'>
+            <div class='modal-content'>
+              <div class='modal-header bg-success text-white'>
+                <h5 class='modal-title'><i class='fas fa-envelope'></i> Send Protocol by Email</h5>
+                <button type='button' class='btn-close btn-close-white' data-bs-dismiss='modal' aria-label='Close'></button>
+              </div>
+              <form method='post' action='/plugins/deliveryterms/front/generate.form.php'>
+                <div class='modal-body'><input type="hidden" name="_glpi_csrf_token" value="88581d2b08950e110d3638a26877e35a8f8c52b026d993527b99dd818966ac37" /><input type="hidden" id="dialogVal" name="doc_id" value="">      <div class='card mb-3 p-3'>
+                        <div class='form-check mb-2'>
+                            <input class='form-check-input send_type' type='radio' name='send_type' id='manually' value='1'>
+                            <label class='form-check-label fw-bold' for='manually'>Manual Entry</label>
+                        </div>
+                        <div class='ps-4'>
+                            <input type='text' name='em_list' class='form-control mb-2 man_recs' placeholder='Recipients (e.g. user@domain.com; manager@domain.com)'>
+                            <input type='text' name='email_subject' class='form-control mb-2 man_recs' placeholder='Subject'>
+                            <textarea name='email_content' class='form-control man_recs' rows='3' placeholder='Message body...'></textarea>
+                        </div>
+                    </div>      <div class='card p-3'>
+                        <div class='form-check mb-2'>
+                            <input class='form-check-input send_type' type='radio' name='send_type' id='auto' value='2' checked>
+                            <label class='form-check-label fw-bold' for='auto'>Use Email Template</label>
+                        </div>
+                        <div class='ps-4'>
+                            <select name='e_list' id='auto_recs' class='form-select'><option value='jpnr79@gmail.com|Termo de Entrega|Segue o documento do {user}|2'>Email default</option>              </select>
+                        </div>
+                    </div><input type="hidden" name="author" value="glpi"><input type="hidden" name="owner" value="glpi"><input type="hidden" name="user_id" value="2">  </div>
+                <div class='modal-footer'>
+                  <button type='button' class='btn btn-secondary' data-bs-dismiss='modal'>Cancel</button>
+                  <button type='submit' name='send' class='btn btn-success'><i class='fas fa-paper-plane'></i> Send</button>
+                </div>
+              </form>
+            </div>
+          </div>
+        </div><div class='card shadow-sm mt-4'>  <div class='card-header fw-bold'><i class='fas fa-history me-1'></i> Generated Terms History</div>  <form method='post' name='docs_form' action='/plugins/deliveryterms/front/generate.form.php'><input type="hidden" name="_glpi_csrf_token" value="88581d2b08950e110d3638a26877e35a8f8c52b026d993527b99dd818966ac37" />  <div class='p-2 bg-light border-bottom d-flex align-items-center'>      <button type='submit' name='delete' class='btn btn-sm btn-outline-danger' onclick='return confirm(Are you sure you want to delete selected items?)'><i class='fas fa-trash'></i> Delete Selected</button>  </div>  <div class='table-responsive'>      <table class='table table-hover align-middle mb-0' id='myTable'>          <thead class='table-light text-center'>              <tr>                  <th width='40'><input type='checkbox' class='form-check-input checkalldoc'></th>                  <th style='max-width:220px;min-width:140px;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;'>Name</th>                  <th style='width:160px'>Creation Date</th>                  <th style='width:320px'>Download</th>                  <th style='width:140px'>Creator</th>                  <th>Action</th>              </tr>          </thead>          <tbody><tr class='text-center'><td><input type='checkbox' name='docnumber[]' value='53' class='form-check-input docchild'></td><td style='max-width:220px;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;'><span class='text-muted'>Document not found</span></td><td>2026-01-01 04:07:18</td><td>-</td><td>glpi</td><td><button type='button' class='btn btn-sm btn-outline-success send-email-btn' 
+                    data-docid='53' 
+                    data-bs-toggle='modal' 
+                    data-bs-target='#motus'><i class='fas fa-envelope'></i> Send Email</button></td></tr><tr class='text-center'><td><input type='checkbox' name='docnumber[]' value='54' class='form-check-input docchild'></td><td style='max-width:220px;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;'><span class='text-muted'>Document not found</span></td><td>2026-01-01 04:16:48</td><td>-</td><td>glpi</td><td><button type='button' class='btn btn-sm btn-outline-success send-email-btn' 
+                    data-docid='54' 
+                    data-bs-toggle='modal' 
+                    data-bs-target='#motus'><i class='fas fa-envelope'></i> Send Email</button></td></tr><tr class='text-center'><td><input type='checkbox' name='docnumber[]' value='55' class='form-check-input docchild'></td><td style='max-width:220px;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;'><span class='text-muted'>Document not found</span></td><td>2026-01-01 04:22:11</td><td>-</td><td>glpi</td><td><button type='button' class='btn btn-sm btn-outline-success send-email-btn' 
+                    data-docid='55' 
+                    data-bs-toggle='modal' 
+                    data-bs-target='#motus'><i class='fas fa-envelope'></i> Send Email</button></td></tr>          </tbody>      </table>  </div>  </form></div></div>
