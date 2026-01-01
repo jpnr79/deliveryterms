@@ -243,12 +243,69 @@ jobs:
           name: playwright-html-report
           path: extracted_report/index.html
 
-      - name: Prepare site content for Pages deploy (supports historical previews)
+      - name: Assemble site content for Pages deploy with retention (supports historical previews)
         if: ${{ always() && secrets.GLPI_UI_USER && secrets.GLPI_PASS && secrets.GLPI_TEMPLATE_ID }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
+          set -euo pipefail
           mkdir -p site_content
+          RETENTION_DAYS=${PAGES_PREVIEW_RETENTION_DAYS:-30}
+          echo "Retention days: $RETENTION_DAYS"
+
           if [ -f extracted_report/index.html ]; then
             if [ "${PAGES_PREVIEW_KEEP_HISTORY:-}" = "true" ]; then
+              echo "Historical previews enabled: assembling site_content with retention"
+
+              # Attempt to fetch existing previews from gh-pages branch (best-effort)
+              BRANCH=gh-pages
+              API_BASE="https://api.github.com/repos/${GITHUB_REPOSITORY}"
+              echo "Checking for existing branch $BRANCH"
+              branch_resp=$(curl -s -H "Authorization: Bearer $GITHUB_TOKEN" "$API_BASE/branches/$BRANCH" || true)
+              sha=$(echo "$branch_resp" | jq -r .commit.sha // true)
+
+              if [ -n "$sha" ] && [ "$sha" != "null" ]; then
+                echo "Found branch $BRANCH with commit $sha"
+                tree_resp=$(curl -s -H "Authorization: Bearer $GITHUB_TOKEN" "$API_BASE/git/trees/$sha?recursive=1")
+
+                # Get preview index paths
+                mapfile -t preview_paths < <(echo "$tree_resp" | jq -r '.tree[].path' | grep -E '^preview/.*/index.html' || true)
+
+                cutoff_epoch=$(date -u -d "-$RETENTION_DAYS days" +%s)
+                echo "Cutoff epoch: $cutoff_epoch"
+
+                for p in "${preview_paths[@]:-}"; do
+                  # Extract timestamp token YYYYMMDD-HHMMSSZ from path
+                  # path format: preview/YYYYMMDD-HHMMSSZ-RUNID/index.html
+                  ts=$(echo "$p" | sed -n 's@^preview/\([0-9]\{8\}-[0-9]\{6\}Z\)-[0-9]\+/index.html@\1@p' || true)
+                  if [ -z "$ts" ]; then
+                    echo "Skipping non-standard preview path: $p"; continue
+                  fi
+                  # Convert ts to epoch
+                  y=${ts:0:4}; m=${ts:4:2}; d=${ts:6:2}; H=${ts:9:2}; M=${ts:11:2}; S=${ts:13:2}
+                  ts_epoch=$(date -u -d "$y-$m-$d $H:$M:$S UTC" +%s || echo 0)
+                  if [ "$ts_epoch" -ge "$cutoff_epoch" ]; then
+                    echo "Keeping preview: $p (ts_epoch=$ts_epoch)"
+                    subdir=$(dirname "$p")
+                    mkdir -p "site_content/$subdir"
+                    # Fetch content via GitHub contents API
+                    content_json=$(curl -s -H "Authorization: Bearer $GITHUB_TOKEN" "$API_BASE/contents/$p?ref=$BRANCH" || true)
+                    encoded=$(echo "$content_json" | jq -r .content // true)
+                    if [ -n "$encoded" ] && [ "$encoded" != "null" ]; then
+                      echo "$encoded" | base64 --decode > "site_content/$subdir/index.html"
+                    else
+                      echo "Could not retrieve content for $p";
+                    fi
+                  else
+                    echo "Pruning old preview: $p (ts_epoch=$ts_epoch)"
+                  fi
+                done
+
+              else
+                echo "Branch $BRANCH not found or inaccessible; cannot prune historical previews via branch read. Proceeding to publish current report only."
+              fi
+
+              # Add current report with timestamped subpath
               TS=$(date -u +'%Y%m%d-%H%M%SZ')
               SUBPATH="preview/${TS}-${GITHUB_RUN_ID}"
               mkdir -p "site_content/${SUBPATH}"
