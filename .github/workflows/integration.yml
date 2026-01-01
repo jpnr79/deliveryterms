@@ -9,7 +9,7 @@ jobs:
     strategy:
       matrix:
         runner:
-          - runs-on: [self-hosted, linux]
+          - [self-hosted, linux]
     runs-on: ${{ matrix.runner }}
     services:
       mysql:
