@@ -55,14 +55,9 @@
       });
 
       // Try to insert the button into existing toolbar if possible
-      var toolbars = editor.settings.toolbar
-        ? editor.settings.toolbar.split('|').map(function (t) {
-            return t.trim();
-          })
-        : [];
       // Only add if not already present
-      if (!editor.settings.toolbar.includes('deliveryterms_table_menu')) {
-        editor.settings.toolbar = 'deliveryterms_table_menu | ' + editor.settings.toolbar;
+      if (!(editor.settings.toolbar || '').includes('deliveryterms_table_menu')) {
+        editor.settings.toolbar = 'deliveryterms_table_menu | ' + (editor.settings.toolbar || '');
       }
     } catch (e) {
       console.debug('[deliveryterms] Could not enhance TinyMCE editor:', e.message);
