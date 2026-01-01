@@ -637,8 +637,18 @@ class PluginDeliverytermsGenerate extends CommonDBTM {
             
             $gen_date = date('Y-m-d H:i:s');
 
+            // Generate a sequential protocol number per year (format: YYYY-####)
+            $year = date('Y');
+            // Use atomic INSERT ... ON DUPLICATE KEY UPDATE to get an incremented counter via LAST_INSERT_ID()
+            $DB->query("INSERT INTO glpi_plugin_deliveryterms_sequence (`year`, `last`) VALUES ('".$year."', 1) ON DUPLICATE KEY UPDATE `last` = LAST_INSERT_ID(`last` + 1)");
+            $res = $DB->query('SELECT LAST_INSERT_ID() AS next');
+            $row = $res->fetch_assoc();
+            $next = intval($row['next'] ?? 1);
+            $protocol_number = sprintf('%s-%04d', $year, $next);
+
             $DB->insert('glpi_plugin_deliveryterms_protocols', [
                 'name' => $doc_name,
+                'protocol_number' => $protocol_number,
                 'gen_date' => $gen_date,
                 'author' => $author,
                 'user_id' => $id,
