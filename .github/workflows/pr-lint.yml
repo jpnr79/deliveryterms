@@ -25,9 +25,16 @@ jobs:
           key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
           restore-keys: |
             ${{ runner.os }}-node-
+      - name: Ensure npm registry
+        run: |
+          echo 'Setting npm registry to public registry.npmjs.org'
+          npm config set registry https://registry.npmjs.org
+          npm --version
+          node --version
+          npm config get registry
 
       - name: Install deps
-        run: |
+      run: |
           if [ -f package-lock.json ]; then npm ci --legacy-peer-deps; else npm init -y && npm i -D eslint prettier --legacy-peer-deps; fi
 
       - name: Run lint and format check (capture output)
