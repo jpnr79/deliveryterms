@@ -61,7 +61,7 @@ jobs:
             git push https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }} HEAD:$BR
             echo "pushed=true" >> $GITHUB_OUTPUT
           else
-            echo "No changes detected" >> $GITHUB_OUTPUT
+            echo "pushed=false" >> $GITHUB_OUTPUT
           fi
 
       - name: Create PR comment
