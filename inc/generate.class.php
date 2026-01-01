@@ -456,8 +456,8 @@ class PluginDeliverytermsGenerate extends CommonDBTM {
             echo "<td>".htmlescape($exports['gen_date'])."</td>";
             if ($Doc->fields) {
                 $filename = htmlescape($Doc->getField('filename') ?: $Doc->getField('name') ?: '');
-                $dlHref = '?download=' . htmlescape($exports['document_id']);
-                echo "<td style='width:320px;'><a href='".$dlHref."' title='".$filename."'>".$filename."</a></td>";
+                $dlHref = htmlescape($CFG_GLPI['root_doc'] . '/front/document.send.php?docid=' . $exports['document_id']);
+                echo "<td style='width:320px;'><a href='".$dlHref."' title='".$filename."' target='_blank' rel='noopener noreferrer'><i class='fas fa-file-pdf me-1'></i><span style='display:inline-block;max-width:260px;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;'>".$filename."</span></a></td>";
             } else {
                 echo "<td>-</td>";
             }
