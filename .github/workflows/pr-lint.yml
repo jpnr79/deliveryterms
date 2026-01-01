@@ -1,0 +1,58 @@
+name: PR Lint
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened, edited]
+
+jobs:
+  pr-lint:
+    name: Lint JS and report results
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+
+      - name: Cache npm
+        uses: actions/cache@v4
+        with:
+          path: ~/.npm
+          key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-node-
+
+      - name: Install deps
+        run: |
+          if [ -f package-lock.json ]; then npm ci; else npm init -y && npm i -D eslint prettier; fi
+
+      - name: Run lint and format check (capture output)
+        run: |
+          set -o pipefail
+          npm run lint 2>&1 | tee lint-output.txt || true
+          npm run format:check 2>&1 | tee format-output.txt || true
+          if [ -s lint-output.txt ] && grep -q "error" lint-output.txt; then LINT_STATUS="fail"; else LINT_STATUS="ok"; fi
+          if [ -s format-output.txt ] && ! grep -q "All matched files use Prettier code style" format-output.txt; then FORMAT_STATUS="fail"; else FORMAT_STATUS="ok"; fi
+          if [ "$LINT_STATUS" = "ok" ] && [ "$FORMAT_STATUS" = "ok" ]; then echo "ok" > result.txt; else echo "fail" > result.txt; fi
+
+      - name: Post PR comment with results
+        uses: actions/github-script@v6
+        with:
+          script: |
+            const fs = require('fs');
+            const lint = fs.existsSync('lint-output.txt') ? fs.readFileSync('lint-output.txt', 'utf8').slice(0, 8000) : 'No output';
+            const format = fs.existsSync('format-output.txt') ? fs.readFileSync('format-output.txt', 'utf8').slice(0, 8000) : 'No output';
+            const result = fs.existsSync('result.txt') ? fs.readFileSync('result.txt', 'utf8').trim() : 'fail';
+            const pr = context.payload.pull_request.number;
+            const status = (result === 'ok') ? '✅ **Passed**' : '❌ **Issues found**';
+            const body = `## JS Lint & Format Results\n**Result:** ${status}\n\n### ESLint output\n\n\`\`\`\n${lint}\n\`\`\`\n\n### Prettier format check\n\n\`\`\`\n${format}\n\`\`\``;
+            await github.rest.issues.createComment({owner: context.repo.owner, repo: context.repo.repo, issue_number: pr, body});
+
+      - name: Fail job if issues found
+        if: ${{ steps['Run lint and format check (capture output)'].outcome == 'success' && (contains(fromJSON('[]'), 'noop') == false) }}
+        run: |
+          if [ -f result.txt ] && grep -q "fail" result.txt; then echo "Lint or format issues found"; exit 1; else echo "All checks passed"; fi
