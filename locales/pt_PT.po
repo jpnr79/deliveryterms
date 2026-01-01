@@ -33,9 +33,6 @@ msgid "You can use {owner} or {admin} here."
 msgstr "Pode usar {owner} ou {admin} aqui."
 
 #: setup.php:11
-#: inc/profile.class.php:33
-#: inc/profile.class.php:87
-#: inc/generate.class.php:23
 msgid "Delivery Terms"
 msgstr "Termos de Entrega"
 
@@ -94,43 +91,6 @@ msgstr "Nome do modelo"
 #: inc/config.class.php:157
 msgid "You can use {owner}, {admin}, {reg_num}, {title} or {category} here."
 msgstr "Pode usar {owner}, {admin}, {reg_num}, {title} ou {category} aqui."
-
-# Added translations for newly wrapped UI labels
-
-msgid "Templates"
-msgstr "Modelos"
-
-msgid "Font"
-msgstr "Fonte"
-
-msgid "Delete file"
-msgstr "Eliminar ficheiro"
-
-msgid "Font size"
-msgstr "Tamanho da fonte"
-
-msgid "Ciudad"
-msgstr "Cidade"
-msgid "Word breaking"
-msgstr "Quebra de palavras"
-
-msgid "On"
-msgstr "Ativado"
-
-msgid "Off"
-msgstr "Desativado"
-
-msgid "Upper Content"
-msgstr "Conteúdo superior"
-
-msgid "Logo width (px)"
-msgstr "Largura do logótipo (px)"
-
-msgid "Logo height (px)"
-msgstr "Altura do logótipo (px)"
-
-msgid "Enable email autosending"
-msgstr "Ativar envio automático de e-mail"
 
 #: inc/config.class.php:157
 msgid "Contenido"
@@ -260,6 +220,55 @@ msgstr "Enviar"
 msgid "Are you sure you want to delete selected items?"
 msgstr "Tem a certeza de que quer eliminar os itens selecionados?"
 
+# Added translations for newly wrapped UI labels
+#: inc/config.class.php:1
+msgid "Templates"
+msgstr "Modelos"
+
+#: inc/config.class.php:1
+msgid "Action"
+msgstr "Ação"
+
+#: inc/config.class.php:1
+msgid "Delete file"
+msgstr "Eliminar ficheiro"
+
+#: inc/config.class.php:1
+msgid "Font"
+msgstr "Fonte"
+
+#: inc/config.class.php:1
+msgid "Font size"
+msgstr "Tamanho da fonte"
+
+#: inc/config.class.php:1
+msgid "Word breaking"
+msgstr "Quebra de palavras"
+
+#: inc/config.class.php:1
+msgid "On"
+msgstr "Ativado"
+
+#: inc/config.class.php:1
+msgid "Off"
+msgstr "Desativado"
+
+#: inc/config.class.php:1
+msgid "Upper Content"
+msgstr "Conteúdo superior"
+
+#: inc/config.class.php:1
+msgid "Logo width (px)"
+msgstr "Largura do logótipo (px)"
+
+#: inc/config.class.php:1
+msgid "Logo height (px)"
+msgstr "Altura do logótipo (px)"
+
+#: inc/config.class.php:1
+msgid "Enable email autosending"
+msgstr "Ativar envio automático de e-mail"
+
 #: inc/generate.class.php:394
 msgid "Delete Selected"
 msgstr "Eliminar selecionados"
@@ -280,10 +289,6 @@ msgstr "Criador"
 msgid "Comment"
 msgstr "Comentário"
 
-#: inc/generate.class.php:415
-msgid "Action"
-msgstr "Ação"
-
 #: inc/generate.class.php:454
 msgid "Document not found"
 msgstr "Documento não encontrado"
@@ -303,3 +308,6 @@ msgstr "E-mail enviado"
 #: inc/generate.class.php:765
 msgid "No recipients specified"
 msgstr "Nenhum destinatário especificado"
+
+#~ msgid "Ciudad"
+#~ msgstr "Cidade"
