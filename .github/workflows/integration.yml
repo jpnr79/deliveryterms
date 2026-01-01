@@ -37,6 +37,27 @@ jobs:
           php-version: '8.2'
           extensions: mbstring, gd, mysqli
 
+      - name: Self-hosted preflight checks
+        if: contains(matrix.runner, 'self-hosted')
+        run: |
+          echo "Running self-hosted preflight checks"
+          # Basic tooling checks
+          command -v php >/dev/null 2>&1 || { echo "php not found"; exit 1; }
+          php -v
+          command -v mysql >/dev/null 2>&1 || echo "mysql client not found"
+          command -v node >/dev/null 2>&1 || echo "node not found"
+          node -v || true
+          command -v npm >/dev/null 2>&1 || echo "npm not found"
+          command -v npx >/dev/null 2>&1 || echo "npx not found"
+          # Font availability
+          if command -v fc-list >/dev/null 2>&1; then fc-list | head -n 5; else echo "fontconfig (fc-list) not available"; fi
+
+      - name: Set up PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.2'
+          extensions: mbstring, gd, mysqli
+
       - name: Install system packages (mysql client, fonts)
         run: sudo apt-get update && sudo apt-get install -y default-mysql-client fonts-dejavu-core libfreetype6 libjpeg62-turbo
 
