@@ -603,7 +603,48 @@ class PluginDeliverytermsGenerate extends CommonDBTM {
             $html2pdf->setPaper('A4', $orientation);
             $html2pdf->render();
 
-            $doc_name = str_replace(' ', '_', $title)."-".date('dmY').'.pdf';
+            // Ensure sequence table exists (for older installs)
+            if (!$DB->tableExists('glpi_plugin_deliveryterms_sequence')) {
+                try {
+                    $DB->doQuery("CREATE TABLE IF NOT EXISTS glpi_plugin_deliveryterms_sequence (
+                        `year` INT(4) UNSIGNED NOT NULL,
+                        `last` INT(11) UNSIGNED NOT NULL DEFAULT 0,
+                        PRIMARY KEY (`year`)
+                    ) DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci");
+                } catch (\Throwable $e) {
+                    error_log('[deliveryterms] Could not ensure sequence table: ' . $e->getMessage());
+                }
+            }
+
+            // Allocate next sequence number for current year (reset per year)
+            $year = date('Y');
+            try {
+                // If no row for this year exists, initialize it with the number of protocols already generated this year
+                $exists = $DB->request('glpi_plugin_deliveryterms_sequence', ['year' => $year])->current();
+                if (!$exists) {
+                    $res = $DB->doQuery("SELECT COUNT(*) as c FROM glpi_plugin_deliveryterms_protocols WHERE gen_date BETWEEN '".$year."-01-01' AND '".$year."-12-31'");
+                    $rowc = $res ? $res->fetch_row()[0] : 0;
+                    $DB->insert('glpi_plugin_deliveryterms_sequence', ['year' => $year, 'last' => (int)$rowc]);
+                }
+
+                // Atomically increment the counter and fetch it
+                $DB->doQuery("UPDATE glpi_plugin_deliveryterms_sequence SET `last` = `last` + 1 WHERE `year` = '".$year."'");
+                $seq_row = $DB->request('glpi_plugin_deliveryterms_sequence', ['year' => $year])->current();
+                $seqnum = (int)($seq_row['last'] ?? 0);
+            } catch (\Throwable $e) {
+                error_log('[deliveryterms] Sequence allocation failed: ' . $e->getMessage());
+                $seqnum = 0; // fallback -> will use date-based filename
+            }
+
+            // Build filename: DocumentType-YYYY-0001.pdf
+            $doc_type_safe = str_replace(' ', '_', $title_template);
+            if ($seqnum > 0) {
+                $doc_name = $doc_type_safe . '-' . $year . '-' . sprintf('%04d', $seqnum) . '.pdf';
+            } else {
+                // fallback to previous date-based naming if sequence failed
+                $doc_name = str_replace(' ', '_', $title)."-".date('dmY').'.pdf';
+            }
+
             $output = $html2pdf->output();
 
             // Write the file into GLPI upload root (Document->moveUploadedDocument forbids slashes in filename)
@@ -618,7 +659,15 @@ class PluginDeliverytermsGenerate extends CommonDBTM {
             @copy($upload_path, $pdf_terms_dir . '/' . $doc_name);
 
             // Create Document using the filename only (no slashes) so GLPI can move it securely
-            $doc_id = self::createDoc($doc_name, $owner, $notes, $title, $id); 
+            $doc_id = self::createDoc($doc_name, $owner, $notes, $title, $id);
+
+            if (!$doc_id) {
+                // Failed to create document: if we allocated a sequence number, we leave it as a gap (preferred), clean files and exit
+                @unlink($upload_path);
+                @unlink($pdf_terms_dir . '/' . $doc_name);
+                Session::addMessageAfterRedirect(__('Failed to create document', 'deliveryterms'), false, ERROR);
+                return;
+            }
 
             // Keep a human-friendly copy in GLPI_VAR_DIR/PDF/TERMS for easier access and organization.
             // Note: GLPI will still move the original uploaded file into its internal structure (e.g. PDF/b3/...);
@@ -634,7 +683,8 @@ class PluginDeliverytermsGenerate extends CommonDBTM {
             if ($email_mode == 1) {
                 self::sendMail($doc_id, $send_user, $email_subject, $email_content, $recipients, $id);
             }
-            
+
+
             $gen_date = date('Y-m-d H:i:s');
 
 

@@ -176,6 +176,16 @@ function plugin_deliveryterms_install(): bool
         ) DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci"
     );
 
+    // Per-year sequence table for protocol numbering
+    $createTable(
+        'glpi_plugin_deliveryterms_sequence',
+        "CREATE TABLE glpi_plugin_deliveryterms_sequence (
+            `year` INT(4) UNSIGNED NOT NULL,
+            `last` INT(11) UNSIGNED NOT NULL DEFAULT 0,
+            PRIMARY KEY (`year`)
+        ) DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci"
+    );
+
     // Clean any pre-existing installer placeholder values that would cause invalid email addresses
     try {
         $DB->doQuery("UPDATE glpi_plugin_deliveryterms_emailconfig SET recipients = '' WHERE recipients = 'Testmail'");
