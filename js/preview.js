@@ -70,10 +70,8 @@
             '" style="width:100%;height:100%;border:0;" allowfullscreen></iframe>';
 
           // cleanup when modal hidden
-          modalEl.addEventListener('hidden.bs.modal', function cleanup() {
-            try {
-              URL.revokeObjectURL(url);
-            } catch (e) {}
+          modalEl.addEventListener('hidden.bs.modal', function cleanup(){
+            try { URL.revokeObjectURL(url); } catch(e){ /* ignore */ }
             modalEl.removeEventListener('hidden.bs.modal', cleanup);
           });
         } else {
@@ -97,32 +95,20 @@
   }
 
   function getCombinedHtml() {
-    var upper = '';
-    var content = '';
-    var footer = '';
+    let upper = '';
+    let content = '';
+    let footer = '';
+    let ta, ta2;
     if (window.tinymce) {
-      var edUpper = window.tinymce.get('template_uppercontent');
-      var edContent = window.tinymce.get('template_content');
-      if (edUpper) {
-        upper = edUpper.getContent();
-      } else {
-        var ta = document.getElementById('template_uppercontent');
-        if (ta) upper = ta.value;
-      }
-      if (edContent) {
-        content = edContent.getContent();
-      } else {
-        var ta2 = document.getElementById('template_content');
-        if (ta2) content = ta2.value;
-      }
+      let edUpper = window.tinymce.get('template_uppercontent');
+      let edContent = window.tinymce.get('template_content');
+      if (edUpper) { upper = edUpper.getContent(); } else { ta = document.getElementById('template_uppercontent'); if (ta) upper = ta.value; }
+      if (edContent) { content = edContent.getContent(); } else { ta2 = document.getElementById('template_content'); if (ta2) content = ta2.value; }
     } else {
-      var ta = document.getElementById('template_uppercontent');
-      if (ta) upper = ta.value;
-      var ta2 = document.getElementById('template_content');
-      if (ta2) content = ta2.value;
+      ta = document.getElementById('template_uppercontent'); if (ta) upper = ta.value;
+      ta2 = document.getElementById('template_content'); if (ta2) content = ta2.value;
     }
-    var tf = document.querySelector('textarea[name="footer_text"]');
-    if (tf) footer = tf.value;
+    let tf = document.querySelector('textarea[name="footer_text"]'); if (tf) footer = tf.value;
     return (upper || '') + '\n' + (content || '') + '\n' + (footer || '');
   }
 

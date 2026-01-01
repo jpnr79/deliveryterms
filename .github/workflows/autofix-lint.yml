@@ -76,7 +76,7 @@ jobs:
         uses: actions/github-script@v6
         with:
           script: |
-            const branch = `${github.event.inputs.branch || github.ref_name}`;
+            const branch = (github.event && github.event.inputs && github.event.inputs.branch) ? github.event.inputs.branch : (github.ref_name || github.ref);
             const pr = (await github.rest.pulls.list({ owner: context.repo.owner, repo: context.repo.repo, head: `${context.repo.owner}:${branch}` })).data[0];
             if (pr) {
               await github.rest.issues.createComment({ owner: context.repo.owner, repo: context.repo.repo, issue_number: pr.number, body: `Applied automatic Prettier & ESLint fixes to branch ${branch}. Please review changes.` });
