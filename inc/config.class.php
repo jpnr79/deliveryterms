@@ -125,13 +125,13 @@ class PluginDeliverytermsConfig extends CommonDBTM {
 		echo Html::hidden('mode', ['value' => $mode]);
 		echo Html::hidden('MAX_FILE_SIZE', ['value' => 1948000]);
 
-		echo "  <div class='card-header'><h4 class='mb-0'>".($mode == 0 ? __('Crear Plantilla', 'deliveryterms') : __('Editar Plantilla', 'deliveryterms'))."</h4></div>";
+		echo "  <div class='card-header'><h4 class='mb-0'>".($mode == 0 ? __('Create Template', 'deliveryterms') : __('Edit Template', 'deliveryterms'))."</h4></div>";"},{
 		// diagnostics removed (cleanup)
 		echo "  <div class='card-body'>";
 		echo "  <table class='table borderless'>";
 		
 		// Field 1: Template Name
-		echo "<tr><td width='25%'>".__('Nombre de la plantilla', 'deliveryterms')."*</td><td><input type='text' name='template_name' class='form-control' value='".htmlescape($template_name)."' required></td></tr>";
+		echo "<tr><td width='25%'>".__('Template name', 'deliveryterms')."*</td><td><input type='text' name='template_name' class='form-control' value='".htmlescape($template_name)."' required></td></tr>";"},{
 		
 		// Field 2: Document Title
 		echo "<tr><td>".__('Document title', 'deliveryterms')."*</td><td><input type='text' name='title' class='form-control' value='".htmlescape($title)."' required><small class='text-info'>".__('You can use {owner} here.', 'deliveryterms')."</small></td></tr>";
@@ -153,7 +153,7 @@ class PluginDeliverytermsConfig extends CommonDBTM {
 				<div class='form-check form-check-inline'><input class='form-check-input' type='radio' name='breakword' value='0' ".($breakword == 0 ? "checked" : "")."> " . dgettext('deliveryterms', 'Off') . "</div></td></tr>";
 
 		// Field 6: City
-		echo "<tr><td>". dgettext('deliveryterms', 'Ciudad') ."</td><td><input type='text' name='city' class='form-control' value='".htmlescape($city)."'></td></tr>";
+		echo "<tr><td>". dgettext('deliveryterms', 'City') ."</td><td><input type='text' name='city' class='form-control' value='".htmlescape($city)."'></td></tr>";"},{
 
 		// Field 7: Upper Content (Rich Text)
 		echo "<tr><td>" . dgettext('deliveryterms', 'Upper Content') . "</td><td>";
@@ -168,7 +168,7 @@ class PluginDeliverytermsConfig extends CommonDBTM {
 		echo "<small class='text-info'>Use placeholders: {type} (template name), {YYYY}, {seq} (zero-padded 4 digits), {owner}, {date}</small></td></tr>";
 
 		// Field 8: Main Content (Rich Text)
-		echo "<tr><td>".__('Contenido', 'deliveryterms')."</td><td>";
+		echo "<tr><td>".__('Lower Content', 'deliveryterms')."</td><td>";"},{
 		Html::textarea(['name'=>'template_content', 'value'=>$template_content, 'enable_richtext'=>true, 'rows'=>8]);
 		echo "<small class='text-info'>".__('You can use {owner}, {admin}, {reg_num}, {title} or {category} here.', 'deliveryterms')."</small></td></tr>";
 
@@ -176,12 +176,12 @@ class PluginDeliverytermsConfig extends CommonDBTM {
 		echo "<tr><td>".__('Footer', 'deliveryterms')."</td><td><textarea name='footer_text' class='form-control' rows='4'>".htmlescape($template_footer)."</textarea></td></tr>";
 
 		// Field 10: Orientation
-		echo "<tr><td>".__('Orientación', 'deliveryterms')."</td><td><select name='orientation' class='form-select' style='max-width:200px;'>";
+		echo "<tr><td>".__('Orientation', 'deliveryterms')."</td><td><select name='orientation' class='form-select' style='max-width:200px;'>";"},{
 		foreach($orientations as $val => $name) echo "<option value='$val' ".($val == $orientation ? "selected" : "").">$name</option>";
 		echo "</select></td></tr>";
 
 		// Field 11: Serial Number Logic (Radio)
-		echo "<tr><td>".__('Número de serie', 'deliveryterms')."</td><td>
+		echo "<tr><td>".__('Serial number', 'deliveryterms')."</td><td>
 				<div class='form-check'><input class='form-check-input' type='radio' name='serial_mode' value='1' ".($serial_mode == 1 ? "checked" : "")."> serial and inventory number in separate columns</div>
 				<div class='form-check'><input class='form-check-input' type='radio' name='serial_mode' value='2' ".($serial_mode == 2 ? "checked" : "")."> serial or inventory number if serial doesn't exists</div>
 			</td></tr>";

@@ -96,8 +96,28 @@ msgid "You can use {owner}, {admin}, {reg_num}, {title} or {category} here."
 msgstr "Vous pouvez utiliser la balise {owner} ou {admin} ici."
 
 #: inc/config.class.php:157
-msgid "Contenido"
-msgstr ""
+msgid "Lower Content"
+msgstr "Contenu inférieur"
+
+#: inc/config.class.php:123
+msgid "Create Template"
+msgstr "Créer un modèle"
+
+#: inc/config.class.php:123
+msgid "Edit Template"
+msgstr "Modifier le modèle"
+
+#: inc/config.class.php:128
+msgid "Template name"
+msgstr "Nom du modèle"
+
+#: inc/config.class.php:165
+msgid "Orientation"
+msgstr "Orientation"
+
+#: inc/config.class.php:170
+msgid "Serial number"
+msgstr "Numéro de série"
 
 #: inc/config.class.php:162
 msgid "Footer"
@@ -119,9 +139,6 @@ msgstr ""
 msgid "Email template"
 msgstr ""
 
-#: inc/config.class.php:344
-msgid "Template name"
-msgstr ""
 
 #: inc/config.class.php:345
 msgid "Email subject"
@@ -187,9 +204,6 @@ msgstr ""
 msgid "State"
 msgstr ""
 
-#: inc/generate.class.php:200
-msgid "Serial number"
-msgstr ""
 
 #: inc/generate.class.php:201
 msgid "Inventory number"

@@ -79,16 +79,16 @@ msgid "Landscape"
 msgstr ""
 
 #: inc/config.class.php:123
-msgid "Crear Plantilla"
-msgstr ""
+msgid "Create Template"
+msgstr "Vytvoriť šablónu"
 
 #: inc/config.class.php:123
-msgid "Editar Plantilla"
-msgstr ""
+msgid "Edit Template"
+msgstr "Upraviť šablónu"
 
 #: inc/config.class.php:128
-msgid "Nombre de la plantilla"
-msgstr ""
+msgid "Template name"
+msgstr "Názov šablóny"
 
 #: inc/config.class.php:157
 #, fuzzy
@@ -96,20 +96,20 @@ msgid "You can use {owner}, {admin}, {reg_num}, {title} or {category} here."
 msgstr "Môžete tu použiť premennú {owner} alebo {admin} "
 
 #: inc/config.class.php:157
-msgid "Contenido"
-msgstr ""
+msgid "Lower Content"
+msgstr "Dolný obsah"
 
 #: inc/config.class.php:162
 msgid "Footer"
 msgstr ""
 
 #: inc/config.class.php:165
-msgid "Orientación"
-msgstr ""
+msgid "Orientation"
+msgstr "Orientácia"
 
 #: inc/config.class.php:170
-msgid "Número de serie"
-msgstr ""
+msgid "Serial number"
+msgstr "Sériové číslo"
 
 #: inc/config.class.php:175
 msgid "Logo"
@@ -119,9 +119,6 @@ msgstr ""
 msgid "Email template"
 msgstr ""
 
-#: inc/config.class.php:344
-msgid "Template name"
-msgstr ""
 
 #: inc/config.class.php:345
 msgid "Email subject"
@@ -187,9 +184,6 @@ msgstr ""
 msgid "State"
 msgstr ""
 
-#: inc/generate.class.php:200
-msgid "Serial number"
-msgstr ""
 
 #: inc/generate.class.php:201
 msgid "Inventory number"

@@ -85,7 +85,15 @@ msgid "Editar Plantilla"
 msgstr "Editar modelo"
 
 #: inc/config.class.php:128
-msgid "Nombre de la plantilla"
+msgid "Create Template"
+msgstr "Criar modelo"
+
+#: inc/config.class.php:123
+msgid "Edit Template"
+msgstr "Editar modelo"
+
+#: inc/config.class.php:128
+msgid "Template name"
 msgstr "Nome do modelo"
 
 #: inc/config.class.php:157
@@ -93,19 +101,19 @@ msgid "You can use {owner}, {admin}, {reg_num}, {title} or {category} here."
 msgstr "Pode usar {owner}, {admin}, {reg_num}, {title} ou {category} aqui."
 
 #: inc/config.class.php:157
-msgid "Contenido"
-msgstr "Conteúdo"
+msgid "Lower Content"
+msgstr "Conteúdo inferior"
 
 #: inc/config.class.php:162
 msgid "Footer"
 msgstr "Rodapé"
 
 #: inc/config.class.php:165
-msgid "Orientación"
+msgid "Orientation"
 msgstr "Orientação"
 
 #: inc/config.class.php:170
-msgid "Número de serie"
+msgid "Serial number"
 msgstr "Número de série"
 
 #: inc/config.class.php:175
@@ -116,9 +124,6 @@ msgstr "Logótipo"
 msgid "Email template"
 msgstr "Modelo de e-mail"
 
-#: inc/config.class.php:344
-msgid "Template name"
-msgstr "Nome do modelo"
 
 #: inc/config.class.php:345
 msgid "Email subject"
@@ -184,9 +189,6 @@ msgstr "Nome"
 msgid "State"
 msgstr "Estado"
 
-#: inc/generate.class.php:200
-msgid "Serial number"
-msgstr "Número de série"
 
 #: inc/generate.class.php:201
 msgid "Inventory number"

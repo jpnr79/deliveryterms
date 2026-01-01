@@ -79,12 +79,12 @@ msgid "Landscape"
 msgstr ""
 
 #: inc/config.class.php:123
-msgid "Crear Plantilla"
-msgstr ""
+msgid "Create Template"
+msgstr "Create Template"
 
 #: inc/config.class.php:123
-msgid "Editar Plantilla"
-msgstr ""
+msgid "Edit Template"
+msgstr "Edit Template"
 
 #: inc/config.class.php:128
 msgid "Nombre de la plantilla"
@@ -187,9 +187,6 @@ msgstr ""
 msgid "State"
 msgstr ""
 
-#: inc/generate.class.php:200
-msgid "Serial number"
-msgstr ""
 
 #: inc/generate.class.php:201
 msgid "Inventory number"
