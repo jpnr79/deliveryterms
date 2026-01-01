@@ -172,15 +172,20 @@ jobs:
           done
 
           npm config set registry https://registry.npmjs.org
+          CI_OK=0
           for i in 1 2 3; do
             if [ -f package-lock.json ]; then
-              npm ci --legacy-peer-deps && break || true
+              npm ci --legacy-peer-deps && { CI_OK=1; break; } || true
             else
-              npm init -y && npm i -D @playwright/test --legacy-peer-deps && break || true
+              npm init -y && npm i -D @playwright/test --legacy-peer-deps && { CI_OK=1; break; } || true
             fi
             echo "Retrying npm install ($i/3)"
             sleep 5
           done
+          if [ -f package-lock.json ] && [ "$CI_OK" -ne 1 ]; then
+            echo "npm ci failed; falling back to npm install --legacy-peer-deps"
+            npm install --legacy-peer-deps || true
+          fi
 
           # Run lint and format checks for JS sources (non-fatal)
           npm run lint || true

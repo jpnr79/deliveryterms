@@ -51,15 +51,20 @@ jobs:
         id: install_deps
         run: |
           set -e
+          CI_OK=0
           for i in 1 2 3; do
             if [ -f package-lock.json ]; then
-              npm ci --legacy-peer-deps && break || true
+              npm ci --legacy-peer-deps && { CI_OK=1; break; } || true
             else
-              npm i -D eslint prettier --legacy-peer-deps && break || true
+              npm i -D eslint prettier --legacy-peer-deps && { CI_OK=1; break; } || true
             fi
             echo "Retrying npm install ($i/3)"
             sleep 5
           done
+          if [ -f package-lock.json ] && [ "$CI_OK" -ne 1 ]; then
+            echo "npm ci failed; falling back to npm install --legacy-peer-deps"
+            npm install --legacy-peer-deps || true
+          fi
         shell: bash
 
       - name: Run lint and format check (capture output)
