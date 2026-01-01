@@ -106,6 +106,11 @@ function plugin_init_deliveryterms(): void
                 $PLUGIN_HOOKS['config_page']['deliveryterms'] = 'front/config.form.php';
             }
 
+            // Register for item deletion hooks so we can cleanup protocol rows when core Documents are removed
+            $PLUGIN_HOOKS[\Glpi\Plugin\Hooks::ITEM_DELETE]['deliveryterms'] = 'plugin_deliveryterms_item_delete';
+            // Also register for purge (hard delete) so we remove protocol rows on purge
+            $PLUGIN_HOOKS[\Glpi\Plugin\Hooks::ITEM_PURGE]['deliveryterms']  = 'plugin_deliveryterms_item_purge';
+
             // Menu integration: intentionally removed to avoid adding a Configuration menu entry.
             // Previously this plugin added an item under Configuration > Protocols Manager via `menu_toadd`.
             // That behaviour has been disabled to keep the Configuration menu uncluttered.

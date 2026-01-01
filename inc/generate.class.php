@@ -391,22 +391,11 @@ class PluginDeliverytermsGenerate extends CommonDBTM {
         
         // CHANGE: Only show delete button if user has 'delete_access'
         if ($can_delete) {
-            // Add an opt-in checkbox to also delete underlying GLPI documents
-            echo "<div class='form-check me-3'><input class='form-check-input' type='checkbox' id='also_delete_docs' name='delete_docs' value='1'> <label class='form-check-label' for='also_delete_docs'>".__('Also delete document (irreversible)','deliveryterms')."</label></div>";
-            echo "      <button type='submit' name='delete' class='btn btn-sm btn-outline-danger' onclick='return confirmDelete()'><i class='fas fa-trash'></i> " . __('Delete Selected', 'deliveryterms') ."</button>";
+            echo "      <button type='submit' name='delete' class='btn btn-sm btn-outline-danger' onclick='return confirm(" . __('Are you sure you want to delete selected items?', 'deliveryterms') . ")'><i class='fas fa-trash'></i> " . __('Delete Selected', 'deliveryterms') ."</button>";
         }
 
         echo "  </div>";
-        // Confirmation script used by delete button (localized)
-        echo '<script>
-            function confirmDelete() {
-                var also = document.getElementById("also_delete_docs");
-                if (also && also.checked) {
-                    return confirm(' . json_encode(__('Are you sure? This will also delete the documents (irreversible).','deliveryterms')) . ');
-                }
-                return confirm(' . json_encode(__('Are you sure you want to delete selected items?','deliveryterms')) . ');
-            }
-        </script>';
+
 
         echo "  <div class='table-responsive'>";
         echo "      <table class='table table-hover align-middle mb-0' id='myTable'>";
@@ -691,23 +680,20 @@ class PluginDeliverytermsGenerate extends CommonDBTM {
              return;
         }
 
-        $delete_docs = isset($_POST['delete_docs']) && ($_POST['delete_docs'] == '1' || $_POST['delete_docs'] === 'on');
         if (isset($_POST['docnumber']) && is_array($_POST['docnumber'])) {
             foreach ($_POST['docnumber'] as $del_key) {
                 // Remove plugin protocol entry
                 $DB->delete('glpi_plugin_deliveryterms_protocols', ['document_id' => $del_key]);
-                // Optionally delete the underlying GLPI document if user requested it
-                if ($delete_docs) {
-                    try {
-                        $doc = new Document();
-                        $doc->delete(['id' => $del_key]);
-                    } catch (\Throwable $e) {
-                        // Log but do not fail the entire operation
-                        error_log('[deliveryterms] Failed to delete document id ' . $del_key . ': ' . $e->getMessage());
-                    }
+                // Restore previous behavior: always delete underlying document
+                try {
+                    $doc = new Document();
+                    $doc->delete(['id' => $del_key]);
+                } catch (\Throwable $e) {
+                    error_log('[deliveryterms] Failed to delete document id ' . $del_key . ': ' . $e->getMessage());
                 }
             }
         }
+
     }
 
     static function sendMail($doc_id, $send_user, $email_subject, $email_content, $recipients, $id) {

@@ -259,6 +259,45 @@ function plugin_deliveryterms_install(): bool
 }
 
 /**
+ * Hook: called when an item is deleted in core (soft-delete)
+ * We use this to remove any plugin protocol rows referencing deleted documents so history stays consistent.
+ */
+function plugin_deliveryterms_item_delete($item) {
+    global $DB;
+    // Only act for Document deletions
+    if (!is_object($item) || $item::class !== Document::class) { return; }
+    $docId = $item->getID();
+    if ($docId) {
+        try {
+            $DB->delete('glpi_plugin_deliveryterms_protocols', ['document_id' => $docId]);
+            error_log("[deliveryterms] Cleaned protocol rows for deleted document id $docId");
+        } catch (\Throwable $e) {
+            error_log("[deliveryterms] Error cleaning protocol rows for document id $docId: " . $e->getMessage());
+        }
+    }
+}
+
+/**
+ * Called when an item is purged (hard delete) in core.
+ * We remove plugin protocol rows and ensure any plugin-side cleanup is performed.
+ */
+function plugin_deliveryterms_item_purge($item) {
+    global $DB;
+    // Only act for Document purges
+    if (!is_object($item) || $item::class !== Document::class) { return; }
+    $docId = $item->getID();
+    if ($docId) {
+        try {
+            // Delete any plugin rows referencing this document (hard cleanup)
+            $DB->delete('glpi_plugin_deliveryterms_protocols', ['document_id' => $docId]);
+            error_log("[deliveryterms] Purged protocol rows for purged document id $docId");
+        } catch (\Throwable $e) {
+            error_log("[deliveryterms] Error purging protocol rows for document id $docId: " . $e->getMessage());
+        }
+    }
+}
+
+/**
  * Uninstall the plugin
  */
 function plugin_deliveryterms_uninstall(): bool

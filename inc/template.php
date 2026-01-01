@@ -92,9 +92,9 @@ $base_fontsize = (!empty($fontsize)) ? $fontsize . 'pt' : '9pt';
 </head>
 <body>
 
-<table class="table-full" style="border: 0.5px solid black;">
+<table class="table-full" style="border: 0px;">
     <tr>
-        <td style="width: 30%; text-align: center; border: 0.5px solid black; padding: 5px;">
+        <td style="width: 30%; text-align: center; border: 0px; padding: 5px;">
             <?php if ($islogo == 1 && file_exists($logo)): 
                 $img_type = pathinfo($logo, PATHINFO_EXTENSION);
                 $img_data = file_get_contents($logo);
@@ -105,10 +105,10 @@ $base_fontsize = (!empty($fontsize)) ? $fontsize . 'pt' : '9pt';
                 <img src="<?= $base64 ?>" style="max-width: <?= $max_w ?>px; max-height: <?= $max_h ?>px; object-fit: contain;" />
             <?php endif; ?>
         </td>
-        <td style="width: 40%; text-align: center; font-size: 14pt; font-weight: bold; border: 0.5px solid black; vertical-align: middle;">
+        <td style="width: 40%; text-align: center; font-size: 14pt; font-weight: bold; border: 0px; vertical-align: middle;">
             <?= htmlspecialchars($title) ?>
         </td>
-        <td style="width: 30%; text-align: center; border: 0.5px solid black; vertical-align: middle;">
+        <td style="width: 30%; text-align: center; border: 0px; vertical-align: middle;">
             <?= htmlspecialchars($city) ?> <?= date('d/m/Y') ?>
         </td>
     </tr>
