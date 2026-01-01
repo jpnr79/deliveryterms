@@ -40,7 +40,7 @@ jobs:
           extensions: mbstring, gd, mysqli
 
       - name: Self-hosted preflight checks
-        if: contains(matrix.runner, 'self-hosted')
+        if: matrix.self_hosted == 'self-hosted'
         run: |
           echo "Running self-hosted preflight checks"
           # Basic tooling checks
