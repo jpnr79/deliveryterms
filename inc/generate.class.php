@@ -637,19 +637,9 @@ class PluginDeliverytermsGenerate extends CommonDBTM {
             
             $gen_date = date('Y-m-d H:i:s');
 
-            // Generate a sequential protocol number per year (format: YYYY-####)
-            $year = intval(date('Y'));
-            // Use atomic INSERT ... ON DUPLICATE KEY UPDATE to get an incremented counter via LAST_INSERT_ID()
-            $sql = "INSERT INTO glpi_plugin_deliveryterms_sequence (`year`, `last`) VALUES ('".$year."', 1) ON DUPLICATE KEY UPDATE `last` = LAST_INSERT_ID(`last` + 1)";
-            $DB->doQuery($sql);
-            $res = $DB->doQuery('SELECT LAST_INSERT_ID() AS next');
-            $row = $res->fetch_assoc();
-            $next = intval($row['next'] ?? 1);
-            $protocol_number = sprintf('%s-%04d', $year, $next);
 
             $DB->insert('glpi_plugin_deliveryterms_protocols', [
                 'name' => $doc_name,
-                'protocol_number' => $protocol_number,
                 'gen_date' => $gen_date,
                 'author' => $author,
                 'user_id' => $id,
@@ -923,13 +913,9 @@ class PluginDeliverytermsGenerate extends CommonDBTM {
                     // If we couldn't find the file in its final location, try the convenience directory PDF/TERMS
                     $fallback = GLPI_VAR_DIR . '/PDF/TERMS/' . $docFilename;
                     if (!empty($docFilename) && is_readable($fallback) && is_file($fallback)) {
-                        try { $nmail->addAttachment($fallback, $docFilename);
-                        $DB->insert('glpi_plugin_deliveryterms_audit', ['action' => 'email_attachment_added', 'user_id' => Session::getLoginUserID() ?: null, 'protocol_id' => $doc_id, 'details' => json_encode(['path' => $fallback, 'filename' => $docFilename])]);
-                    } catch (\Throwable $e) { error_log('[deliveryterms] Failed to attach fallback document (sendOneMail): ' . $e->getMessage());
-                        try { $DB->insert('glpi_plugin_deliveryterms_audit', ['action' => 'email_attachment_failed', 'user_id' => Session::getLoginUserID() ?: null, 'protocol_id' => $doc_id, 'details' => json_encode(['error' => $e->getMessage()])]); } catch (\Throwable $ex) {} }
+                        try { $nmail->addAttachment($fallback, $docFilename); } catch (\Throwable $e) { error_log('[deliveryterms] Failed to attach fallback document (sendOneMail): ' . $e->getMessage()); }
                     } else {
                         error_log('[deliveryterms] Attachment skipped (sendOneMail); file not found or unreadable: ' . GLPI_VAR_DIR . '/' . $docFilepath . ' and fallback ' . $fallback);
-                        try { $DB->insert('glpi_plugin_deliveryterms_audit', ['action' => 'email_attachment_missing', 'user_id' => Session::getLoginUserID() ?: null, 'protocol_id' => $doc_id, 'details' => json_encode(['filepath' => $docFilepath, 'fallback' => $fallback])]); } catch (\Throwable $ex) {}
                     }
                 }
             }
