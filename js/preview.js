@@ -30,7 +30,7 @@
       modal.className = 'modal fade';
       modal.id = 'deliverytermsPreviewModal';
       modal.tabIndex = -1;
-      modal.innerHTML = "<div class='modal-dialog modal-xl modal-dialog-centered' style='max-width:95%;height:95%;'><div class='modal-content' style='height:95%;'><div class='modal-header'><h5 class='modal-title'>Preview</h5><button type='button' class='btn-close' data-bs-dismiss='modal' aria-label='Close'></button></div><div class='modal-body p-0' style='height:calc(100% - 56px);'><div id='deliverytermsPreviewBody' style='width:100%;height:100%;display:flex;align-items:center;justify-content:center;'><div class="spinner-border text-primary" role="status"><span class="visually-hidden">Loading...</span></div></div></div></div></div>";
+      modal.innerHTML = `<div class='modal-dialog modal-xl modal-dialog-centered' style='max-width:95%;height:95%;'><div class='modal-content' style='height:95%;'><div class='modal-header'><h5 class='modal-title'>Preview</h5><button type='button' class='btn-close' data-bs-dismiss='modal' aria-label='Close'></button></div><div class='modal-body p-0' style='height:calc(100% - 56px);'><div id='deliverytermsPreviewBody' style='width:100%;height:100%;display:flex;align-items:center;justify-content:center;'><div class="spinner-border text-primary" role="status"><span class="visually-hidden">Loading...</span></div></div></div></div></div>`;
       document.body.appendChild(modal);
     }
 
