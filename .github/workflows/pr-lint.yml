@@ -39,27 +39,43 @@ jobs:
           if [ -s format-output.txt ] && ! grep -q "All matched files use Prettier code style" format-output.txt; then FORMAT_STATUS="fail"; else FORMAT_STATUS="ok"; fi
           if [ "$LINT_STATUS" = "ok" ] && [ "$FORMAT_STATUS" = "ok" ]; then echo "ok" > result.txt; else echo "fail" > result.txt; fi
 
-      - name: Post PR comment with results (create or update existing bot comment)
+      - name: Update PR body with a compact lint status (insert/update markers)
         uses: actions/github-script@v6
         with:
           script: |
             const fs = require('fs');
-            const lint = fs.existsSync('lint-output.txt') ? fs.readFileSync('lint-output.txt', 'utf8').slice(0, 8000) : 'No output';
-            const format = fs.existsSync('format-output.txt') ? fs.readFileSync('format-output.txt', 'utf8').slice(0, 8000) : 'No output';
+            const lint = fs.existsSync('lint-output.txt') ? fs.readFileSync('lint-output.txt', 'utf8').slice(0, 4000) : 'No output';
+            const format = fs.existsSync('format-output.txt') ? fs.readFileSync('format-output.txt', 'utf8').slice(0, 4000) : 'No output';
             const result = fs.existsSync('result.txt') ? fs.readFileSync('result.txt', 'utf8').trim() : 'fail';
-            const pr = context.payload.pull_request.number;
+            const prNumber = context.payload.pull_request.number;
             const status = (result === 'ok') ? '✅ **Passed**' : '❌ **Issues found**';
-            const header = '## JS Lint & Format Results';
-            const body = `${header}\n**Result:** ${status}\n\n### ESLint output\n\n\`\`\`\n${lint}\n\`\`\`\n\n### Prettier format check\n\n\`\`\`\n${format}\n\`\`\``;
 
-            // Look for an existing bot comment to update
-            const { data: comments } = await github.rest.issues.listComments({ owner: context.repo.owner, repo: context.repo.repo, issue_number: pr });
-            const botComment = comments.find(c => c.user && c.user.type === 'Bot' && c.body && c.body.startsWith(header));
+            const markerStart = '<!-- deliveryterms-pr-lint:start -->';
+            const markerEnd = '<!-- deliveryterms-pr-lint:end -->';
+            const summary = `**JS Lint & Format:** ${status}  
+**ESLint:** ${result === 'ok' ? 'OK' : 'Problems found'}  
+**Prettier:** ${result === 'ok' ? 'OK' : 'Problems found'}  \n\n<details>\n<summary>Details (truncated)</summary>\n\n**ESLint excerpt:**\n\n\`\`\`\n${lint}\n\`\`\`\n\n**Prettier excerpt:**\n\n\`\`\`\n${format}\n\`\`\`\n\n</details>`;
 
-            if (botComment) {
-              await github.rest.issues.updateComment({ owner: context.repo.owner, repo: context.repo.repo, comment_id: botComment.id, body });
+            // Get current PR body
+            const { data: pr } = await github.rest.pulls.get({ owner: context.repo.owner, repo: context.repo.repo, pull_number: prNumber });
+            const body = pr.body || '';
+
+            // Insert or replace the marked section
+            const startIdx = body.indexOf(markerStart);
+            if (startIdx !== -1) {
+              const endIdx = body.indexOf(markerEnd, startIdx);
+              let newBody;
+              if (endIdx !== -1) {
+                newBody = body.slice(0, startIdx) + markerStart + '\n' + summary + '\n' + markerEnd + body.slice(endIdx + markerEnd.length);
+              } else {
+                // malformed, replace from start marker to end
+                newBody = body.slice(0, startIdx) + markerStart + '\n' + summary + '\n' + markerEnd;
+              }
+              await github.rest.pulls.update({ owner: context.repo.owner, repo: context.repo.repo, pull_number: prNumber, body: newBody });
             } else {
-              await github.rest.issues.createComment({ owner: context.repo.owner, repo: context.repo.repo, issue_number: pr, body });
+              // Prepend the summary at the top with markers
+              const newBody = markerStart + '\n' + summary + '\n' + markerEnd + '\n\n' + body;
+              await github.rest.pulls.update({ owner: context.repo.owner, repo: context.repo.repo, pull_number: prNumber, body: newBody });
             }
 
       - name: Fail job if issues found
