@@ -48,20 +48,8 @@ msgstr ""
 msgid "Email settings"
 msgstr ""
 
-#: inc/profile.class.php:33
-msgid "Delivery Terms"
-msgstr ""
-
-#: inc/profile.class.php:87
-msgid "Delivery Terms"
-msgstr ""
-
 #: inc/profile.class.php:99
 msgid "Save"
-msgstr ""
-
-#: inc/generate.class.php:23
-msgid "Delivery Terms"
 msgstr ""
 
 #: inc/generate.class.php:157
@@ -98,10 +86,6 @@ msgstr ""
 
 #: inc/config.class.php:128
 msgid "Nombre de la plantilla"
-msgstr ""
-
-#: inc/config.class.php:149
-msgid "You can use {owner} here."
 msgstr ""
 
 #: inc/config.class.php:157
@@ -178,10 +162,6 @@ msgstr ""
 
 #: inc/generate.class.php:186
 msgid "Select Items to Include"
-msgstr ""
-
-#: inc/generate.class.php:187
-msgid "Add Manual Field"
 msgstr ""
 
 #: inc/generate.class.php:195
@@ -292,14 +272,6 @@ msgstr ""
 msgid "Delete Selected"
 msgstr ""
 
-#: inc/generate.class.php:409
-msgid "Name"
-msgstr ""
-
-#: inc/generate.class.php:410
-msgid "Template"
-msgstr ""
-
 #: inc/generate.class.php:411
 msgid "Creation Date"
 msgstr ""
@@ -314,10 +286,6 @@ msgstr ""
 
 #: inc/generate.class.php:414
 msgid "Comment"
-msgstr ""
-
-#: inc/generate.class.php:415
-msgid "Action"
 msgstr ""
 
 #: inc/generate.class.php:454
