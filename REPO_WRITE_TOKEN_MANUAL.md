@@ -1,1 +1,0 @@
-REPO_WRITE_TOKEN manual test
