@@ -407,11 +407,10 @@ class PluginDeliverytermsGenerate extends CommonDBTM {
         } else {
              echo "                  <th width='40'></th>";
         }
-        echo "                  <th>".__('Name', 'deliveryterms')."</th>";
-        echo "                  <th>".__('Creation Date', 'deliveryterms')."</th>";
-        echo "                  <th>".__('Download', 'deliveryterms')."</th>";
-        echo "                  <th>".__('Creator', 'deliveryterms')."</th>";
-        echo "                  <th>".__('Comment', 'deliveryterms')."</th>";
+        echo "                  <th style='max-width:220px;min-width:140px;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;'>".__('Name', 'deliveryterms')."</th>";
+        echo "                  <th style='width:160px'>".__('Creation Date', 'deliveryterms')."</th>";
+        echo "                  <th style='width:64px'>".__('Download', 'deliveryterms')."</th>";
+        echo "                  <th style='width:140px'>".__('Creator', 'deliveryterms')."</th>";
         echo "                  <th>".__('Action', 'deliveryterms')."</th>";
         echo "              </tr>";
         echo "          </thead>";
@@ -446,10 +445,10 @@ class PluginDeliverytermsGenerate extends CommonDBTM {
                  echo "<td></td>";
             }
     
-            echo "<td>";
+            echo "<td style='max-width:220px;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;'>";
             $Doc = new Document();
             if ($Doc->getFromDB($exports['document_id'])) {
-                 echo $Doc->getLink();
+                 echo "<div style='max-width:200px;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;'>" . $Doc->getLink() . "</div>";
             } else {
                  echo "<span class='text-muted'>".__('Document not found', 'deliveryterms')."</span>";
             }
@@ -457,7 +456,6 @@ class PluginDeliverytermsGenerate extends CommonDBTM {
             echo "<td>".htmlescape($exports['gen_date'])."</td>";
             echo "<td>".($Doc->fields ? $Doc->getDownloadLink() : '-')."</td>";
             echo "<td>".htmlescape($exports['author'])."</td>";
-            echo "<td><small>".($Doc->fields ? htmlescape($Doc->getField("comment")) : '')."</small></td>";
             echo "<td>";
             echo "<button type='button' class='btn btn-sm btn-outline-success send-email-btn' 
                     data-docid='".htmlescape($exports['document_id'])."' 
