@@ -51,19 +51,13 @@ jobs:
         id: install_deps
         run: |
           set -e
-          CI_OK=0
-          for i in 1 2 3; do
-            if [ -f package-lock.json ]; then
-              npm ci --legacy-peer-deps && { CI_OK=1; break; } || true
-            else
-              npm i -D eslint prettier --legacy-peer-deps && { CI_OK=1; break; } || true
-            fi
-            echo "Retrying npm install ($i/3)"
-            sleep 5
-          done
-          if [ -f package-lock.json ] && [ "$CI_OK" -ne 1 ]; then
-            echo "npm ci failed; falling back to npm install --legacy-peer-deps"
-            npm install --legacy-peer-deps || true
+          echo "Using npm registry: $(npm config get registry || echo 'unknown')"
+          if [ -f package-lock.json ]; then
+            echo "Running: npm ci --legacy-peer-deps (fallback to npm install if it fails)"
+            npm ci --legacy-peer-deps || { echo "npm ci failed, running npm install --legacy-peer-deps"; npm install --legacy-peer-deps || true; }
+          else
+            echo "No package-lock.json: installing dev deps"
+            npm i -D eslint prettier --legacy-peer-deps || npm install --legacy-peer-deps || true
           fi
         shell: bash
 
