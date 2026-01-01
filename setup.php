@@ -76,8 +76,8 @@ function plugin_init_deliveryterms(): void
     // CSRF and CSS
     $PLUGIN_HOOKS['csrf_compliant']['deliveryterms'] = true;
     $PLUGIN_HOOKS['add_css']['deliveryterms']        = 'css/styles.css';
-    // TinyMCE enhancements for table editing in plugin forms
-    $PLUGIN_HOOKS['add_javascript']['deliveryterms'] = 'js/deliveryterms_tinymce.js';
+    // TinyMCE enhancements for table editing in plugin forms and preview helpers
+    $PLUGIN_HOOKS['add_javascript']['deliveryterms'] = ['js/deliveryterms_tinymce.js','js/preview.js'];
 
     // Register tabs for supported item types (fixed to 'User' only)
     foreach (['User'] as $target) {
