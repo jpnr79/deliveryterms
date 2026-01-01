@@ -79,13 +79,7 @@ function plugin_init_deliveryterms(): void
 
     // Register tabs for supported item types
     $tabTargets = [
-        'User', 
-        'Printer', 
-        'Peripheral', 
-        // Removed 'Computer' from default tab targets as requested
-        'Phone', 
-        'Line', 
-        'Monitor'
+        'User'
     ];
     
     foreach ($tabTargets as $target) {
