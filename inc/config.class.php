@@ -199,22 +199,7 @@ class PluginDeliverytermsConfig extends CommonDBTM {
 		echo "<tr><td>" . dgettext('deliveryterms', 'Logo width (px)') . "</td><td><input type='number' name='logo_width' class='form-control' style='max-width:100px;' value='".htmlescape($logo_width)."'></td></tr>";
 		echo "<tr><td>" . dgettext('deliveryterms', 'Logo height (px)') . "</td><td><input type='number' name='logo_height' class='form-control' style='max-width:100px;' value='".htmlescape($logo_height)."'></td></tr>";
 
-		// Plugin Settings: toggle which item types show the tab
-		echo "<tr><td>" . dgettext('deliveryterms', 'Plugin tabs on item types') . "</td><td>";
-		// Load current setting
-		$cur = '';
-		if ($DB->tableExists('glpi_plugin_deliveryterms_settings')) {
-			$rowset = $DB->request(['FROM' => 'glpi_plugin_deliveryterms_settings', 'WHERE' => ['option_key' => 'tab_itemtypes']])->current();
-			if ($rowset) { $cur = $rowset['option_value']; }
-		}
-		$selected_types = $cur ? explode(',', $cur) : ['User'];
-		$all_types = ['User' => 'User', 'Computer' => 'Computer', 'Printer' => 'Printer', 'Peripheral' => 'Peripheral', 'Phone' => 'Phone', 'Line' => 'Line', 'Monitor' => 'Monitor'];
-		echo "<div class='d-flex flex-wrap gap-2'>";
-		foreach ($all_types as $k => $label) {
-			$checked = in_array($k, $selected_types) ? "checked" : "";
-			echo "<div class='form-check'><input class='form-check-input' type='checkbox' name='tab_itemtypes[]' value='".htmlescape($k)."' $checked> <label class='form-check-label'>".htmlescape($label)."</label></div>";
-		}
-		echo "</div><small class='text-info'>Choose which item types should display the Delivery Terms tab. Save by clicking 'Save' below.</small><br><small class='text-muted'>See plugin <a href='README.md' target='_blank'>README</a> for filename placeholders ({type}, {YYYY}, {seq}, {owner}) and TinyMCE table helpers.</small></td></tr>";
+
 
 		// Field 15: Email Autosending Toggle
 		echo "<tr><td>" . dgettext('deliveryterms', 'Enable email autosending') . "</td><td>
@@ -316,19 +301,6 @@ class PluginDeliverytermsConfig extends CommonDBTM {
             }
         }
 
-        // Handle plugin settings save (tab item types)
-        if (isset($_POST['save'])) {
-            // If checkboxes were left empty, treat as no types selected
-            $selected = isset($_POST['tab_itemtypes']) ? $_POST['tab_itemtypes'] : [];
-            $value = implode(',', $selected);
-            // Upsert into settings table
-            $existing = $DB->request(['FROM' => 'glpi_plugin_deliveryterms_settings', 'WHERE' => ['option_key' => 'tab_itemtypes']])->current();
-            if ($existing) {
-                $DB->update('glpi_plugin_deliveryterms_settings', ['option_value' => $value], ['option_key' => 'tab_itemtypes']);
-            } else {
-                $DB->insert('glpi_plugin_deliveryterms_settings', ['option_key' => 'tab_itemtypes', 'option_value' => $value]);
-            }
-        }
         Session::addMessageAfterRedirect(__('Settings saved', 'deliveryterms'));
 	}
 
