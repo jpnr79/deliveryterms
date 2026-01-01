@@ -82,7 +82,7 @@ function plugin_init_deliveryterms(): void
         'User', 
         'Printer', 
         'Peripheral', 
-        'Computer',
+        // Removed 'Computer' from default tab targets as requested
         'Phone', 
         'Line', 
         'Monitor'
