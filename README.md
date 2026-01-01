@@ -7,6 +7,8 @@ GLPI Plugin to make PDF reports with user inventory.
 * Saving protocols in GLPI Documents
 * Possibility to create different protocol templates
 * Templates have configurable name, font, orientation, logo image, city, content and footer
+* Filename patterns per-template using placeholders (e.g. `{type}-{YYYY}-{seq}`). Supported placeholders: `{type}`, `{YYYY}`, `{seq}`, `{owner}`, `{date}`
+* TinyMCE enhancements: the plugin adds a small "Table" menu to the editor used in templates to make table editing (insert/delete rows/columns) easier for users.
 * Possibility to make comments to any selected item
 * Showing Manufacturer (only first word to be clearly) and Model of item
 * Showing serial number or inventory number in one or two columns

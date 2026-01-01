@@ -186,6 +186,31 @@ function plugin_deliveryterms_install(): bool
         ) DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci"
     );
 
+    // Per-template filename pattern (optional)
+    // Add column if missing (for upgrades)
+    try {
+        if ($DB->tableExists('glpi_plugin_deliveryterms_config')) {
+            $field = $DB->getField('glpi_plugin_deliveryterms_config', 'filename_pattern', false);
+            if (!$field) {
+                $DB->doQuery("ALTER TABLE glpi_plugin_deliveryterms_config ADD COLUMN filename_pattern VARCHAR(255) DEFAULT NULL");
+            }
+        }
+    } catch (\Throwable $e) {
+        error_log('[deliveryterms] Could not ensure filename_pattern column: ' . $e->getMessage());
+    }
+
+    // Plugin settings table (store key/value options like tab_itemtypes)
+    $createTable(
+        'glpi_plugin_deliveryterms_settings',
+        "CREATE TABLE glpi_plugin_deliveryterms_settings (
+            id INT(11) UNSIGNED NOT NULL AUTO_INCREMENT,
+            `option_key` VARCHAR(100) NOT NULL,
+            `option_value` TEXT,
+            PRIMARY KEY (id),
+            UNIQUE KEY `option_key` (`option_key`)
+        ) DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci"
+    );
+
     // Clean any pre-existing installer placeholder values that would cause invalid email addresses
     try {
         $DB->doQuery("UPDATE glpi_plugin_deliveryterms_emailconfig SET recipients = '' WHERE recipients = 'Testmail'");

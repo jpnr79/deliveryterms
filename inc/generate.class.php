@@ -616,34 +616,47 @@ class PluginDeliverytermsGenerate extends CommonDBTM {
                 }
             }
 
-            // Allocate next sequence number for current year (reset per year)
-            $year = date('Y');
-            try {
-                // If no row for this year exists, initialize it with the number of protocols already generated this year
-                $exists = $DB->request('glpi_plugin_deliveryterms_sequence', ['year' => $year])->current();
-                if (!$exists) {
-                    $res = $DB->doQuery("SELECT COUNT(*) as c FROM glpi_plugin_deliveryterms_protocols WHERE gen_date BETWEEN '".$year."-01-01' AND '".$year."-12-31'");
-                    $rowc = $res ? $res->fetch_row()[0] : 0;
-                    $DB->insert('glpi_plugin_deliveryterms_sequence', ['year' => $year, 'last' => (int)$rowc]);
-                }
+            // Determine filename pattern: use per-template setting when present
+            $default_pattern = '{type}-{YYYY}-{seq}.pdf';
+            $pattern = $row['filename_pattern'] ?? $default_pattern;
 
-                // Atomically increment the counter and fetch it
-                $DB->doQuery("UPDATE glpi_plugin_deliveryterms_sequence SET `last` = `last` + 1 WHERE `year` = '".$year."'");
-                $seq_row = $DB->request('glpi_plugin_deliveryterms_sequence', ['year' => $year])->current();
-                $seqnum = (int)($seq_row['last'] ?? 0);
-            } catch (\Throwable $e) {
-                error_log('[deliveryterms] Sequence allocation failed: ' . $e->getMessage());
-                $seqnum = 0; // fallback -> will use date-based filename
-            }
-
-            // Build filename: DocumentType-YYYY-0001.pdf
             $doc_type_safe = str_replace(' ', '_', $title_template);
-            if ($seqnum > 0) {
-                $doc_name = $doc_type_safe . '-' . $year . '-' . sprintf('%04d', $seqnum) . '.pdf';
-            } else {
-                // fallback to previous date-based naming if sequence failed
-                $doc_name = str_replace(' ', '_', $title)."-".date('dmY').'.pdf';
+            $year = date('Y');
+            $uses_seq = strpos($pattern, '{seq}') !== false;
+            $seqnum = 0;
+
+            if ($uses_seq) {
+                try {
+                    // If no row for this year exists, initialize it with the number of protocols already generated this year
+                    $exists = $DB->request('glpi_plugin_deliveryterms_sequence', ['year' => $year])->current();
+                    if (!$exists) {
+                        $res = $DB->doQuery("SELECT COUNT(*) as c FROM glpi_plugin_deliveryterms_protocols WHERE gen_date BETWEEN '".$year."-01-01' AND '".$year."-12-31'");
+                        $rowc = $res ? $res->fetch_row()[0] : 0;
+                        $DB->insert('glpi_plugin_deliveryterms_sequence', ['year' => $year, 'last' => (int)$rowc]);
+                    }
+
+                    // Atomically increment the counter and fetch it
+                    $DB->doQuery("UPDATE glpi_plugin_deliveryterms_sequence SET `last` = `last` + 1 WHERE `year` = '".$year."'");
+                    $seq_row = $DB->request('glpi_plugin_deliveryterms_sequence', ['year' => $year])->current();
+                    $seqnum = (int)($seq_row['last'] ?? 0);
+                } catch (\Throwable $e) {
+                    error_log('[deliveryterms] Sequence allocation failed: ' . $e->getMessage());
+                    $seqnum = 0;
+                }
             }
+
+            // Replace placeholders
+            $replacements = [
+                '{type}' => $doc_type_safe,
+                '{YYYY}' => $year,
+                '{date}' => date('dmY'),
+                '{owner}' => preg_replace('/\s+/', '_', $owner)
+            ];
+            if ($uses_seq) { $replacements['{seq}'] = sprintf('%04d', $seqnum); }
+
+            $doc_name = strtr($pattern, $replacements);
+            // If pattern did not include extension, ensure .pdf
+            if (strtolower(substr($doc_name, -4)) !== '.pdf') { $doc_name .= '.pdf'; }
 
             $output = $html2pdf->output();
 
