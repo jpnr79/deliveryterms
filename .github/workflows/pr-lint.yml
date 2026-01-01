@@ -8,6 +8,9 @@ jobs:
   pr-lint:
     name: Lint JS and report results
     runs-on: [self-hosted, linux]
+    concurrency:
+      group: ${{ github.workflow }}-pr-lint-${{ github.head_ref || github.ref }}
+      cancel-in-progress: true
 
     steps:
       - name: Checkout
@@ -27,8 +30,20 @@ jobs:
             ${{ runner.os }}-node-
 
       - name: Install deps
+        id: install_deps
         run: |
-          if [ -f package-lock.json ]; then npm ci; else npm init -y && npm i -D eslint prettier; fi
+          set -e
+          REG="https://registry.npmjs.org"
+          echo "Setting registry to $REG"
+          npm config set registry "$REG" || true
+          if [ -f package-lock.json ]; then
+            echo "Running: npm ci --legacy-peer-deps --registry=$REG (fallback to npm install if it fails)"
+            npm ci --legacy-peer-deps --registry="$REG" || { echo "npm ci failed; running npm install --legacy-peer-deps --registry=$REG"; npm install --legacy-peer-deps --registry="$REG" || true; }
+          else
+            echo "No package-lock.json: installing dev deps"
+            npm i -D eslint prettier --legacy-peer-deps --registry="$REG" || npm install --legacy-peer-deps --registry="$REG" || true
+          fi
+        shell: bash
 
       - name: Run lint and format check (capture output)
         run: |
@@ -39,7 +54,19 @@ jobs:
           if [ -s format-output.txt ] && ! grep -q "All matched files use Prettier code style" format-output.txt; then FORMAT_STATUS="fail"; else FORMAT_STATUS="ok"; fi
           if [ "$LINT_STATUS" = "ok" ] && [ "$FORMAT_STATUS" = "ok" ]; then echo "ok" > result.txt; else echo "fail" > result.txt; fi
 
+      - name: Upload debug artifacts on failure
+        if: ${{ failure() }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: plugin-pr-lint-logs
+          path: |
+            lint-output.txt
+            format-output.txt
+            npm-debug.log
+            .npm/_logs || true
+
       - name: Update PR body with a compact lint status (insert/update markers)
+        if: ${{ github.event.pull_request && (github.event.pull_request.head.repo.full_name == github.repository) }}
         uses: actions/github-script@v6
         with:
           script: |
