@@ -167,11 +167,26 @@ function plugin_deliveryterms_install(): bool
         "CREATE TABLE glpi_plugin_deliveryterms_protocols (
             id INT(11) UNSIGNED NOT NULL AUTO_INCREMENT,
             name VARCHAR(255),
+            protocol_number VARCHAR(20) DEFAULT NULL,
             user_id INT(11) UNSIGNED,
             gen_date DATETIME,
             author VARCHAR(255),
             document_id INT(11) UNSIGNED,
             document_type VARCHAR(255),
+            PRIMARY KEY (id)
+        ) DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci"
+    );
+
+    // Audit table for key plugin actions (protocol create/delete, send mail, config changes)
+    $createTable(
+        'glpi_plugin_deliveryterms_audit',
+        "CREATE TABLE glpi_plugin_deliveryterms_audit (
+            id INT(11) UNSIGNED NOT NULL AUTO_INCREMENT,
+            action VARCHAR(100) NOT NULL,
+            user_id INT(11) UNSIGNED DEFAULT NULL,
+            ts DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+            protocol_id INT(11) UNSIGNED DEFAULT NULL,
+            details TEXT DEFAULT NULL,
             PRIMARY KEY (id)
         ) DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci"
     );

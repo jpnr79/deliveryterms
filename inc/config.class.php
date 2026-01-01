@@ -268,8 +268,18 @@ class PluginDeliverytermsConfig extends CommonDBTM {
 
         if ($mode == 0) {
             $DB->insert('glpi_plugin_deliveryterms_config', $fields);
+            // Audit: config created
+            try {
+                $DB->insert('glpi_plugin_deliveryterms_audit', ['action' => 'config_created', 'user_id' => Session::getLoginUserID() ?: null, 'details' => json_encode(['name' => $fields['name'] ?? ''])]);
+            } catch (\Throwable $e) { error_log('[deliveryterms] Failed to insert audit for config create: ' . $e->getMessage()); }
         } else {
+            // Capture previous values before update for traceability
+            $old = $DB->request(['FROM' => 'glpi_plugin_deliveryterms_config', 'WHERE' => ['id' => $mode]])->current();
             $DB->update('glpi_plugin_deliveryterms_config', $fields, ['id' => $mode]);
+            // Audit: config updated (store diff)
+            try {
+                $DB->insert('glpi_plugin_deliveryterms_audit', ['action' => 'config_updated', 'user_id' => Session::getLoginUserID() ?: null, 'details' => json_encode(['id' => $mode, 'before' => $old, 'after' => $fields])]);
+            } catch (\Throwable $e) { error_log('[deliveryterms] Failed to insert audit for config update: ' . $e->getMessage()); }
         }
         Session::addMessageAfterRedirect(__('Settings saved', 'deliveryterms'));
 	}
@@ -319,7 +329,9 @@ class PluginDeliverytermsConfig extends CommonDBTM {
 	static function deleteConfigs() {
 		global $DB;
 		if (isset($_POST['conf_id'])) {
-			$DB->delete('glpi_plugin_deliveryterms_config', ['id' => $_POST['conf_id']]);
+			$confId = (int)$_POST['conf_id'];
+			try { $DB->insert('glpi_plugin_deliveryterms_audit', ['action' => 'config_deleted', 'user_id' => Session::getLoginUserID() ?: null, 'details' => json_encode(['id' => $confId])]); } catch (\Throwable $e) { error_log('[deliveryterms] Failed to insert audit for config delete: ' . $e->getMessage()); }
+			$DB->delete('glpi_plugin_deliveryterms_config', ['id' => $confId]);
 			Session::addMessageAfterRedirect(__('Template deleted', 'deliveryterms'));
 		}
 	}
@@ -376,8 +388,12 @@ class PluginDeliverytermsConfig extends CommonDBTM {
 
 		if ($email_edit_id == 0) {
 			$DB->insert('glpi_plugin_deliveryterms_emailconfig', $fields);
+			try { $DB->insert('glpi_plugin_deliveryterms_audit', ['action' => 'email_config_created', 'user_id' => Session::getLoginUserID() ?: null, 'details' => json_encode(['tname' => $fields['tname']])]); } catch (\Throwable $e) { error_log('[deliveryterms] Failed to insert audit for email config create: ' . $e->getMessage()); }
 		} else {
+			// Capture previous values
+			$old = $DB->request(['FROM' => 'glpi_plugin_deliveryterms_emailconfig', 'WHERE' => ['id' => $email_edit_id]])->current();
 			$DB->update('glpi_plugin_deliveryterms_emailconfig', $fields, ['id' => $email_edit_id]);
+			try { $DB->insert('glpi_plugin_deliveryterms_audit', ['action' => 'email_config_updated', 'user_id' => Session::getLoginUserID() ?: null, 'details' => json_encode(['id' => $email_edit_id, 'before' => $old, 'after' => $fields])]); } catch (\Throwable $e) { error_log('[deliveryterms] Failed to insert audit for email config update: ' . $e->getMessage()); }
 		}
 		Session::addMessageAfterRedirect(__('Email settings saved', 'deliveryterms'));
 	}
@@ -410,7 +426,9 @@ class PluginDeliverytermsConfig extends CommonDBTM {
 	static function deleteEmailConfigs() {
 		global $DB;
 		if (isset($_POST['email_conf_id'])) {
-			$DB->delete('glpi_plugin_deliveryterms_emailconfig', ['id' => $_POST['email_conf_id']]);
+			$emailConfId = (int)$_POST['email_conf_id'];
+			try { $DB->insert('glpi_plugin_deliveryterms_audit', ['action' => 'email_config_deleted', 'user_id' => Session::getLoginUserID() ?: null, 'details' => json_encode(['id' => $emailConfId])]); } catch (\Throwable $e) { error_log('[deliveryterms] Failed to insert audit for email config delete: ' . $e->getMessage()); }
+			$DB->delete('glpi_plugin_deliveryterms_emailconfig', ['id' => $emailConfId]);
 			Session::addMessageAfterRedirect(__('Email template deleted', 'deliveryterms'));
 		}
 	}
