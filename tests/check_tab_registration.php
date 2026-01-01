@@ -1,5 +1,5 @@
 <?php
-// Check that plugin_init_deliveryterms registers tabs according to the `tab_itemtypes` setting.
+// Check that plugin_init_deliveryterms registers the tab for User items by default.
 // This test runs without full GLPI bootstrap by stubbing a minimal Plugin and DB interface.
 
 $mysqli = new mysqli('localhost', 'glpi', 'YourStrongPassword', 'glpi');
@@ -11,9 +11,8 @@ if ($mysqli->connect_errno) {
 // Ensure settings table exists
 $mysqli->query("CREATE TABLE IF NOT EXISTS glpi_plugin_deliveryterms_settings (id INT(11) UNSIGNED NOT NULL AUTO_INCREMENT, `option_key` VARCHAR(100) NOT NULL, `option_value` TEXT, PRIMARY KEY (id), UNIQUE KEY `option_key` (`option_key`)) DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;");
 
-// Upsert a test value with two item types
-$val = 'User,Computer';
-$mysqli->query("INSERT INTO glpi_plugin_deliveryterms_settings (`option_key`, `option_value`) VALUES ('tab_itemtypes', '${val}') ON DUPLICATE KEY UPDATE `option_value` = '${val}'");
+// No setting to insert - plugin should register the tab for User only by default
+
 
 // Minimal $DB wrapper used by plugin_init_deliveryterms
 class SimpleDBWrapper {
@@ -77,16 +76,10 @@ if (isset(Plugin::$registered) && is_array(Plugin::$registered)) {
 
 $registered = array_unique($registered);
 sort($registered);
-$expected = ['Computer','User'];
-sort($expected);
+$expected = ['User'];
 
 if ($registered == $expected) {
     echo "OK: tab registrations found for: " . implode(',', $registered) . PHP_EOL;
-    // cleanup
-    if (in_array('--cleanup', $argv ?? [])) {
-        $mysqli->query("DELETE FROM glpi_plugin_deliveryterms_settings WHERE option_key = 'tab_itemtypes'");
-        echo "Cleanup done\n";
-    }
     exit(0);
 } else {
     echo "FAILED: expected registrations for " . implode(',', $expected) . " but got " . implode(',', $registered) . PHP_EOL;

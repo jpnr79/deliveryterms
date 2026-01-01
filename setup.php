@@ -79,21 +79,8 @@ function plugin_init_deliveryterms(): void
     // TinyMCE enhancements for table editing in plugin forms
     $PLUGIN_HOOKS['add_javascript']['deliveryterms'] = 'js/deliveryterms_tinymce.js';
 
-    // Register tabs for supported item types (configured via settings 'tab_itemtypes')
-    $tabTargets = ['User']; // default
-    try {
-        if ($DB->tableExists('glpi_plugin_deliveryterms_settings')) {
-            $row = $DB->request(['FROM' => 'glpi_plugin_deliveryterms_settings', 'WHERE' => ['option_key' => 'tab_itemtypes']])->current();
-            if ($row && !empty($row['option_value'])) {
-                $parts = array_filter(array_map('trim', explode(',', $row['option_value'])));
-                if (!empty($parts)) { $tabTargets = $parts; }
-            }
-        }
-    } catch (\Throwable $e) {
-        error_log("[deliveryterms] Could not read tab_itemtypes setting: " . $e->getMessage());
-    }
-
-    foreach ($tabTargets as $target) {
+    // Register tabs for supported item types (fixed to 'User' only)
+    foreach (['User'] as $target) {
         Plugin::registerClass('PluginDeliverytermsGenerate', ['addtabon' => $target]);
     }
 
