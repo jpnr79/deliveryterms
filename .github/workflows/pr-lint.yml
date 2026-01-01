@@ -52,9 +52,8 @@ jobs:
 
             const markerStart = '<!-- deliveryterms-pr-lint:start -->';
             const markerEnd = '<!-- deliveryterms-pr-lint:end -->';
-            const summary = `**JS Lint & Format:** ${status}  
-**ESLint:** ${result === 'ok' ? 'OK' : 'Problems found'}  
-**Prettier:** ${result === 'ok' ? 'OK' : 'Problems found'}  \n\n<details>\n<summary>Details (truncated)</summary>\n\n**ESLint excerpt:**\n\n\`\`\`\n${lint}\n\`\`\`\n\n**Prettier excerpt:**\n\n\`\`\`\n${format}\n\`\`\`\n\n</details>`;
+            const badge = (result === 'ok') ? '![JS Lint](https://img.shields.io/badge/JS%20Lint-Passed-brightgreen)' : '![JS Lint](https://img.shields.io/badge/JS%20Lint-Failed-red)';
+            const summary = `${badge}  \n**JS Lint & Format:** ${status}  \n**ESLint:** ${result === 'ok' ? 'OK' : 'Problems found'}  \n**Prettier:** ${result === 'ok' ? 'OK' : 'Problems found'}  \n\n<details>\n<summary>Details (truncated)</summary>\n\n**ESLint excerpt:**\n\n\`\`\`\n${lint}\n\`\`\`\n\n**Prettier excerpt:**\n\n\`\`\`\n${format}\n\`\`\`\n\n</details>`;
 
             // Get current PR body
             const { data: pr } = await github.rest.pulls.get({ owner: context.repo.owner, repo: context.repo.repo, pull_number: prNumber });

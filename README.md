@@ -82,7 +82,7 @@ PHP 8.0.15
   - Auto-fix lintable issues: `npm run lint:fix`.
   - Format files with Prettier: `npm run format`.
   - CI: The workflow runs `npm run lint` and `npm run format:check` during the Playwright job to enforce code style and catch issues early.
-  - PR checks: A separate workflow (`.github/workflows/pr-lint.yml`) runs on pull requests and updates the PR body with a compact lint status summary (inserted between HTML markers). The detailed excerpts are available inside a collapsible details block within the PR body, preventing comment spam and keeping the discussion cleaner.
+  - PR checks: A separate workflow (`.github/workflows/pr-lint.yml`) runs on pull requests and updates the PR body with a compact lint status summary (inserted between HTML markers). The summary now includes a small status badge (green `Passed` or red `Failed`). Detailed excerpts are available inside a collapsible details block within the PR body, preventing comment spam and keeping the discussion cleaner.
 - Start a local PHP server serving GLPI's public dir (example):
   - `nohup php -S 127.0.0.1:8000 -t /var/www/glpi/public &`
 - Run the headless script (example):
