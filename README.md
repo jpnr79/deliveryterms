@@ -23,3 +23,21 @@ PHP 8.0.15
 3. Go to GLPI Plugin Menu and click 'install' and then 'activate'
 
 4. If translations do not appear after updating locales, clear GLPI cache (Administration → Maintenance → Clear cache) or remove files in `files/_cache` and `files/_locales`. The installer will place compiled `.mo` files under `locales/<lang>/LC_MESSAGES/deliveryterms.mo`.
+
+## Testing & CI
+- Integration sequence check (local):
+  - php plugins/deliveryterms/tests/integration_check_sequence.php
+  - php plugins/deliveryterms/tests/integration_check_sequence.php --cleanup (restores sequence counter)
+
+- Simulated generation (local):
+  - php plugins/deliveryterms/tests/simulate_generate.php
+  - php plugins/deliveryterms/tests/simulate_generate.php --cleanup (deletes created DB rows and file)
+
+- Headless UI helper (login + submit form using curl):
+  - ./plugins/deliveryterms/tests/ui_generate_curl.sh <GLPI_URL> <USERNAME> <PASSWORD> <TEMPLATE_ID> <TARGET_USER_ID>
+
+- CI:
+  - GitHub Actions workflow runs on push to `main` and executes the integration sequence test and the simulate generation test in a MySQL service environment.
+
+**Note:** The simulated generation test uses Dompdf (bundled in the plugin) and requires system fonts; the CI workflow installs fonts-dejavu to ensure rendering.
+

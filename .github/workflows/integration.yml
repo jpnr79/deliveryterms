@@ -30,10 +30,10 @@ jobs:
         uses: shivammathur/setup-php@v2
         with:
           php-version: '8.2'
-          extensions: mysqli
+          extensions: mbstring, gd, mysqli
 
-      - name: Install mysql client
-        run: sudo apt-get update && sudo apt-get install -y default-mysql-client
+      - name: Install system packages (mysql client, fonts)
+        run: sudo apt-get update && sudo apt-get install -y default-mysql-client fonts-dejavu-core libfreetype6 libjpeg62-turbo
 
       - name: Wait for MySQL
         run: |
@@ -50,3 +50,8 @@ jobs:
         run: |
           php -f plugins/deliveryterms/tests/integration_check_sequence.php
           php -f plugins/deliveryterms/tests/integration_check_sequence.php --cleanup
+
+      - name: Run simulate generation test (requires Dompdf and fonts)
+        run: |
+          php -f plugins/deliveryterms/tests/simulate_generate.php
+          php -f plugins/deliveryterms/tests/simulate_generate.php --cleanup
