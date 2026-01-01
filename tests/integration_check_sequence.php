@@ -35,4 +35,11 @@ $filename = $doc_type . '-' . $year . '-' . sprintf('%04d', $seqnum) . '.pdf';
 echo "Allocated sequence: ${seqnum}\n";
 echo "Filename would be: ${filename}\n";
 
+// Support cleanup mode (--cleanup) to decrement the last value when used for a dry run
+if (in_array('--cleanup', $argv ?? [])) {
+    // Only attempt to decrement if sequence > initialized value
+    $mysqli->query("UPDATE glpi_plugin_deliveryterms_sequence SET `last` = `last` - 1 WHERE `year` = ${year} AND `last` > 0");
+    echo "Cleanup applied: decremented sequence for ${year}\n";
+}
+
 ?>

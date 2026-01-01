@@ -47,6 +47,46 @@ if (!defined('GLPI_UPLOAD_DIR')) { define('GLPI_UPLOAD_DIR', '/var/www/glpi/file
 if (!defined('GLPI_PICTURE_DIR')) { define('GLPI_PICTURE_DIR', GLPI_UPLOAD_DIR . '/pictures'); }
 if (!defined('GLPI_VAR_DIR'))     { define('GLPI_VAR_DIR', GLPI_UPLOAD_DIR); }
 if (!defined('CFG_GLPI'))         { define('CFG_GLPI', ['root_doc' => '/var/www/glpi']); }
+// Additional constants used by kernel/cache/logging
+if (!defined('GLPI_CONFIG_DIR'))  { define('GLPI_CONFIG_DIR', '/var/www/glpi/config'); }
+if (!defined('GLPI_CACHE_DIR'))   { define('GLPI_CACHE_DIR', GLPI_VAR_DIR . '/_cache'); }
+if (!defined('GLPI_LOG_DIR'))     { define('GLPI_LOG_DIR', GLPI_VAR_DIR . '/_log'); }
+if (!defined('GLPI_FILES_VERSION')){ define('GLPI_FILES_VERSION', 'files'); }
+
+// Ensure necessary directories exist
+@mkdir(GLPI_CACHE_DIR, 0755, true);
+@mkdir(GLPI_LOG_DIR, 0755, true);
+@mkdir(GLPI_PICTURE_DIR, 0755, true);
+
+// Ensure logger used by cache/other components
+global $PHPLOGGER;
+if (!isset($PHPLOGGER) || $PHPLOGGER === null) {
+    // Use Monolog if available, fallback to a simple PSR-3 Null logger
+    if (class_exists('\Monolog\\Logger')) {
+        $PHPLOGGER = new \Monolog\Logger('glpi_test');
+        $PHPLOGGER->pushHandler(new \Monolog\Handler\StreamHandler(GLPI_LOG_DIR . '/php-errors.log'));
+    } else {
+        // Minimal Null logger implementation
+        class MinimalLogger implements Psr\Log\LoggerInterface {
+            public function emergency($message, array $context = array()) {}
+            public function alert($message, array $context = array()) {}
+            public function critical($message, array $context = array()) {}
+            public function error($message, array $context = array()) {}
+            public function warning($message, array $context = array()) {}
+            public function notice($message, array $context = array()) {}
+            public function info($message, array $context = array()) {}
+            public function debug($message, array $context = array()) {}
+            public function log($level, $message, array $context = array()) {}
+        }
+        $PHPLOGGER = new MinimalLogger();
+    }
+}
+
+// Ensure language is set to avoid loadLanguage warnings
+if (!isset($_SESSION['glpilanguage'])) { $_SESSION['glpilanguage'] = 'en_GB'; }
+// Define local i18n dir used by Session::loadLanguage
+if (!defined('GLPI_LOCAL_I18N_DIR')) { define('GLPI_LOCAL_I18N_DIR', GLPI_VAR_DIR . '/_locales'); }
+@mkdir(GLPI_LOCAL_I18N_DIR, 0755, true);
 
 // Call the generation directly
 echo "Calling PluginDeliverytermsGenerate::makeProtocol()...\n";
