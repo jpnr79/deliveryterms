@@ -603,20 +603,7 @@ class PluginDeliverytermsGenerate extends CommonDBTM {
             $html2pdf->setPaper('A4', $orientation);
             $html2pdf->render();
 
-            // Reserve protocol row to obtain an id to use in the filename
-            $gen_date = date('Y-m-d H:i:s');
-            $DB->insert('glpi_plugin_deliveryterms_protocols', [
-                'name' => '',
-                'gen_date' => $gen_date,
-                'author' => $author,
-                'user_id' => $id,
-                'document_id' => 0,
-                'document_type' => $title_template
-            ]);
-            $proto_id = $DB->insertId();
-
-            // Filename format: YYYY-<zero-padded id>.pdf (e.g. 2026-0001.pdf)
-            $doc_name = date('Y') . '-' . sprintf('%04d', $proto_id) . '.pdf';
+            $doc_name = str_replace(' ', '_', $title)."-".date('dmY').'.pdf';
             $output = $html2pdf->output();
 
             // Write the file into GLPI upload root (Document->moveUploadedDocument forbids slashes in filename)
@@ -631,22 +618,7 @@ class PluginDeliverytermsGenerate extends CommonDBTM {
             @copy($upload_path, $pdf_terms_dir . '/' . $doc_name);
 
             // Create Document using the filename only (no slashes) so GLPI can move it securely
-            $doc_id = self::createDoc($doc_name, $owner, $notes, $title, $id);
-
-            if (!$doc_id) {
-                // Failed to create document: cleanup placeholder and files
-                $DB->delete('glpi_plugin_deliveryterms_protocols', ['id' => $proto_id]);
-                @unlink($upload_path);
-                @unlink($pdf_terms_dir . '/' . $doc_name);
-                Session::addMessageAfterRedirect(__('Failed to create document', 'deliveryterms'), false, ERROR);
-                return;
-            }
-
-            // Update the reserved protocol row with the actual name and document id
-            $DB->update('glpi_plugin_deliveryterms_protocols', [
-                'name' => $doc_name,
-                'document_id' => $doc_id
-            ], ['id' => $proto_id]);
+            $doc_id = self::createDoc($doc_name, $owner, $notes, $title, $id); 
 
             // Keep a human-friendly copy in GLPI_VAR_DIR/PDF/TERMS for easier access and organization.
             // Note: GLPI will still move the original uploaded file into its internal structure (e.g. PDF/b3/...);
@@ -662,6 +634,19 @@ class PluginDeliverytermsGenerate extends CommonDBTM {
             if ($email_mode == 1) {
                 self::sendMail($doc_id, $send_user, $email_subject, $email_content, $recipients, $id);
             }
+            
+            $gen_date = date('Y-m-d H:i:s');
+
+
+            $DB->insert('glpi_plugin_deliveryterms_protocols', [
+                'name' => $doc_name,
+                'gen_date' => $gen_date,
+                'author' => $author,
+                'user_id' => $id,
+                'document_id' => $doc_id,
+                'document_type' => $title_template
+            ]);
+
 
 
             $DB->insert('glpi_documents_items', [
