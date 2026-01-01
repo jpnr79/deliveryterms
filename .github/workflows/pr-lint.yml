@@ -39,7 +39,7 @@ jobs:
           if [ -s format-output.txt ] && ! grep -q "All matched files use Prettier code style" format-output.txt; then FORMAT_STATUS="fail"; else FORMAT_STATUS="ok"; fi
           if [ "$LINT_STATUS" = "ok" ] && [ "$FORMAT_STATUS" = "ok" ]; then echo "ok" > result.txt; else echo "fail" > result.txt; fi
 
-      - name: Post PR comment with results
+      - name: Post PR comment with results (create or update existing bot comment)
         uses: actions/github-script@v6
         with:
           script: |
@@ -49,8 +49,18 @@ jobs:
             const result = fs.existsSync('result.txt') ? fs.readFileSync('result.txt', 'utf8').trim() : 'fail';
             const pr = context.payload.pull_request.number;
             const status = (result === 'ok') ? '✅ **Passed**' : '❌ **Issues found**';
-            const body = `## JS Lint & Format Results\n**Result:** ${status}\n\n### ESLint output\n\n\`\`\`\n${lint}\n\`\`\`\n\n### Prettier format check\n\n\`\`\`\n${format}\n\`\`\``;
-            await github.rest.issues.createComment({owner: context.repo.owner, repo: context.repo.repo, issue_number: pr, body});
+            const header = '## JS Lint & Format Results';
+            const body = `${header}\n**Result:** ${status}\n\n### ESLint output\n\n\`\`\`\n${lint}\n\`\`\`\n\n### Prettier format check\n\n\`\`\`\n${format}\n\`\`\``;
+
+            // Look for an existing bot comment to update
+            const { data: comments } = await github.rest.issues.listComments({ owner: context.repo.owner, repo: context.repo.repo, issue_number: pr });
+            const botComment = comments.find(c => c.user && c.user.type === 'Bot' && c.body && c.body.startsWith(header));
+
+            if (botComment) {
+              await github.rest.issues.updateComment({ owner: context.repo.owner, repo: context.repo.repo, comment_id: botComment.id, body });
+            } else {
+              await github.rest.issues.createComment({ owner: context.repo.owner, repo: context.repo.repo, issue_number: pr, body });
+            }
 
       - name: Fail job if issues found
         if: ${{ steps['Run lint and format check (capture output)'].outcome == 'success' && (contains(fromJSON('[]'), 'noop') == false) }}
