@@ -71,6 +71,14 @@ jobs:
         run: |
           mysql -h127.0.0.1 -P3306 -u"$MYSQL_USER" -p"$MYSQL_PASSWORD" -e "CREATE DATABASE IF NOT EXISTS glpi; USE glpi; CREATE TABLE IF NOT EXISTS glpi_plugin_deliveryterms_protocols (id INT(11) UNSIGNED NOT NULL AUTO_INCREMENT, name VARCHAR(255), user_id INT(11) UNSIGNED, gen_date DATETIME, author VARCHAR(255), document_id INT(11) UNSIGNED, document_type VARCHAR(255), PRIMARY KEY (id));"
 
+      - name: Debug workspace before integration test
+        run: |
+          echo "PWD: $(pwd)"
+          echo "Listing repository root:"
+          ls -la || true
+          echo "Listing plugin tests directory:"
+          ls -la plugins/deliveryterms/tests || true
+
       - name: Run integration test (allocate then cleanup)
         run: |
           php -f plugins/deliveryterms/tests/integration_check_sequence.php
