@@ -606,6 +606,7 @@ class PluginDeliverytermsGenerate extends CommonDBTM {
             $doc_name = str_replace(' ', '_', $title)."-".date('dmY').'.pdf';
             $output = $html2pdf->output();
 
+            // Write directly into the GLPI upload folder (legacy behavior)
             file_put_contents(GLPI_UPLOAD_DIR .'/'.$doc_name, $output);
             
             $doc_id = self::createDoc($doc_name, $owner, $notes, $title, $id); 
