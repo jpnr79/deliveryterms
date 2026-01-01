@@ -40,6 +40,27 @@ PHP 8.0.15
 
 - CI:
   - GitHub Actions workflow runs on push to `main` and executes the integration sequence test and the simulate generation test in a MySQL service environment.
+  - The workflow now includes a **CLI UI render check** (verifies the generate page wording and icon spacing) and an **optional E2E step** that runs the `ui_generate_curl.sh` script against a live GLPI instance (guarded by secrets).
+
+**Optional E2E in CI (how to enable)**
+- Set the following repository secrets in GitHub (Repository → Settings → Secrets):
+  - `GLPI_UI_USER` — username to log in to GLPI (e.g., `glpi`)
+  - `GLPI_UI_PASS` — password for that user
+  - `GLPI_TEMPLATE_ID` — ID of an existing deliveryterms template (used by the test)
+  - `GLPI_TARGET_USER_ID` — ID of the user to which the term applies
+- When these secrets are present, the workflow will start a local PHP server and run the headless E2E script. The step is intentionally guarded to avoid failures on repositories without a test GLPI instance.
+
+**Running the UI E2E locally**
+- Start a local PHP server serving GLPI's public dir (example):
+  - `nohup php -S 127.0.0.1:8000 -t /var/www/glpi/public &`
+- Run the headless script (example):
+  - `./plugins/deliveryterms/tests/ui_generate_curl.sh http://127.0.0.1:8000 <USERNAME> <PASSWORD> <TEMPLATE_ID> <TARGET_USER_ID>`
+- The script will:
+  - login, extract a CSRF token (supports both the meta `glpi:csrf_token` and `<input name="_glpi_csrf_token">`),
+  - submit the generation form, and
+  - report whether a generation was triggered (check DB `glpi_plugin_deliveryterms_protocols` and `files/PDF` for the generated file).
+
+**Note:** Keep secrets safe — prefer GitHub repository secrets over passing credentials on the command line or in PRs.
 
 **Note:** The simulated generation test uses Dompdf (bundled in the plugin) and requires system fonts; the CI workflow installs fonts-dejavu to ensure rendering.
 
