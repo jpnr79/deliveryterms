@@ -1,5 +1,10 @@
 name: Deliveryterms Integration Tests
 
+permissions:
+  contents: read
+  pages: write
+  pull-requests: write
+
 on:
   push:
     branches: [ main ]
@@ -9,7 +14,7 @@ jobs:
     concurrency:
       group: ${{ github.workflow }}-${{ github.ref }}
       cancel-in-progress: true
-    runs-on: self-hosted
+    runs-on: [self-hosted, linux]
     strategy: {}
     services:
       mysql:
@@ -51,11 +56,6 @@ jobs:
           # Font availability
           if command -v fc-list >/dev/null 2>&1; then fc-list | head -n 5; else echo "fontconfig (fc-list) not available"; fi
 
-      - name: Set up PHP
-        uses: shivammathur/setup-php@v2
-        with:
-          php-version: '8.2'
-          extensions: mbstring, gd, mysqli
 
       - name: Install system packages (mysql client, fonts)
         run: sudo apt-get update && sudo apt-get install -y default-mysql-client fonts-dejavu-core libfreetype6 libjpeg62-turbo
@@ -93,8 +93,8 @@ jobs:
         run: |
           php -f plugins/deliveryterms/tests/ui_render_generate_cli.php
 
-      - name: Optional: Run UI E2E (curl) against built-in PHP server (requires secrets)
-        if: ${{ secrets.GLPI_UI_USER && secrets.GLPI_UI_PASS && secrets.GLPI_TEMPLATE_ID && secrets.GLPI_TARGET_USER_ID }}
+      - name: "Optional: Run UI E2E (curl) against built-in PHP server (requires secrets)"
+        if: "${{ secrets.GLPI_UI_USER && secrets.GLPI_UI_PASS && secrets.GLPI_TEMPLATE_ID && secrets.GLPI_TARGET_USER_ID }}"
         env:
           GLPI_URL: http://127.0.0.1:8000
           GLPI_UI_USER: ${{ secrets.GLPI_UI_USER }}
@@ -115,8 +115,8 @@ jobs:
           chmod +x plugins/deliveryterms/tests/ui_generate_curl.sh
           plugins/deliveryterms/tests/ui_generate_curl.sh "$GLPI_URL" "$GLPI_UI_USER" "$GLPI_UI_PASS" "$GLPI_TEMPLATE_ID" "$GLPI_TARGET_USER_ID"
 
-      - name: Optional: Cache npm dependencies for Node steps
-        if: ${{ secrets.GLPI_UI_USER && secrets.GLPI_UI_PASS && secrets.GLPI_TEMPLATE_ID }}
+      - name: "Optional: Cache npm dependencies for Node steps"
+        if: "${{ secrets.GLPI_UI_USER && secrets.GLPI_UI_PASS && secrets.GLPI_TEMPLATE_ID && secrets.GLPI_TARGET_USER_ID }}"
         uses: actions/cache@v4
         with:
           path: ~/.npm
@@ -125,14 +125,16 @@ jobs:
             ${{ runner.os }}-node-
 
       - name: Set up Node.js (for Playwright)
-        if: ${{ secrets.GLPI_UI_USER && secrets.GLPI_UI_PASS && secrets.GLPI_TEMPLATE_ID }}
+        if: "${{ secrets.GLPI_UI_USER && secrets.GLPI_UI_PASS && secrets.GLPI_TEMPLATE_ID && secrets.GLPI_TARGET_USER_ID }}"
         uses: actions/setup-node@v4
         with:
           node-version: '18'
           cache: 'npm'
 
       - name: Cache Playwright browsers
-        if: ${{ secrets.GLPI_UI_USER && secrets.GLPI_UI_PASS && secrets.GLPI_TEMPLATE_ID }}
+
+        if: "${{ secrets.GLPI_UI_USER && secrets.GLPI_UI_PASS && secrets.GLPI_TEMPLATE_ID && secrets.GLPI_TARGET_USER_ID }}"
+
         uses: actions/cache@v4
         with:
           path: ~/.cache/ms-playwright
@@ -140,9 +142,8 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-playwright-
 
-
-      - name: Optional: Cache npm dependencies for Playwright
-        if: ${{ secrets.GLPI_UI_USER && secrets.GLPI_UI_PASS && secrets.GLPI_TEMPLATE_ID }}
+- name: "Optional: Cache npm dependencies for Playwright"
+        if: "${{ secrets.GLPI_UI_USER && secrets.GLPI_UI_PASS && secrets.GLPI_TEMPLATE_ID && secrets.GLPI_TARGET_USER_ID }}"
         uses: actions/cache@v4
         with:
           path: ~/.npm
@@ -150,8 +151,8 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-node-
 
-      - name: Optional: Run Playwright E2E preview test (guarded by secrets)
-        if: ${{ secrets.GLPI_UI_USER && secrets.GLPI_UI_PASS && secrets.GLPI_TEMPLATE_ID }}
+      - name: "Optional: Run Playwright E2E preview test (guarded by secrets)"
+        if: ${{ secrets.GLPI_UI_USER && secrets.GLPI_UI_PASS && secrets.GLPI_TEMPLATE_ID && secrets.GLPI_TARGET_USER_ID }}
         env:
           GLPI_URL: http://127.0.0.1:8000
           GLPI_UI_USER: ${{ secrets.GLPI_UI_USER }}
@@ -217,7 +218,9 @@ jobs:
         if: ${{ failure() && secrets.GLPI_UI_USER && secrets.GLPI_UI_PASS && secrets.GLPI_TEMPLATE_ID }}
         uses: actions/upload-artifact@v4
         with:
-          name: playwright-debug-artifacts
+
+          name: plugin-playwright-debug-artifacts
+
           path: |
             playwright-results
             playwright-report
