@@ -1,0 +1,81 @@
+name: Auto-fix PR (base permissions)
+
+on:
+  pull_request_target:
+    types: [opened, synchronize, reopened]
+
+permissions:
+  contents: write
+
+jobs:
+  auto-fix:
+    if: github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout PR head (safe: same-repo)
+        uses: actions/checkout@v4
+        with:
+          repository: ${{ github.event.pull_request.head.repo.full_name }}
+          ref: ${{ github.event.pull_request.head.ref }}
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+
+      - name: Install dependencies
+        run: |
+          npm ci --no-audit --no-fund --legacy-peer-deps || npm install --no-audit --no-fund --legacy-peer-deps || true
+
+      - name: Run Prettier
+        run: |
+          npm run format || true
+
+      - name: Run ESLint --fix
+        run: |
+          npm run lint:fix || true
+
+      - name: Show git diff
+        run: |
+          git status --porcelain
+          git --no-pager diff --name-only || true
+
+      - name: Commit and push fixes
+        id: push
+        run: |
+          set -e
+          if ! git diff-index --quiet HEAD --; then
+            git config user.name "github-actions[bot]"
+            git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+            git add -A
+            git commit -m "chore(ci): apply automatic Prettier & ESLint fixes"
+
+            # Ensure we integrate remote updates and push
+            BR=${{ github.event.pull_request.head.ref }}
+            git fetch origin $BR --depth=1 || true
+            git pull --rebase origin $BR || true
+
+            git push https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }} HEAD:$BR
+            echo "pushed=true" >> $GITHUB_OUTPUT
+          else
+            echo "pushed=false" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Create PR comment
+        if: steps.push.outputs.pushed == 'true'
+        uses: actions/github-script@v6
+        with:
+          script: |
+            const prNum = context.payload.pull_request.number;
+            await github.rest.issues.createComment({ owner: context.repo.owner, repo: context.repo.repo, issue_number: prNum, body: `Applied automatic Prettier & ESLint fixes to branch ${context.payload.pull_request.head.ref}. Please review.` });
+
+      - name: Upload diff artifact when not pushed
+        if: steps.push.outputs.pushed != 'true'
+        uses: actions/upload-artifact@v4
+        with:
+          name: lint-diff
+          path: |
+            $(git --no-pager diff --name-only) || true
