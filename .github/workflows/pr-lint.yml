@@ -85,6 +85,7 @@ jobs:
             .npm/_logs || true
 
       - name: Update PR body with a compact lint status (insert/update markers)
+        if: ${{ github.event.pull_request && (github.event.pull_request.head.repo.full_name == github.repository) }}
         uses: actions/github-script@v6
         with:
           script: |
