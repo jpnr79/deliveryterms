@@ -48,6 +48,26 @@ $base_fontsize = (!empty($fontsize)) ? $fontsize . 'pt' : '9pt';
             margin-bottom: 5px;
         }
 
+        /* Styling for user-supplied upper content tables to ensure consistent rendering */
+        .upper-content table {
+            width: 100%;
+            border-collapse: collapse;
+            table-layout: fixed;
+            word-wrap: break-word;
+            overflow-wrap: break-word;
+            margin-bottom: 8px;
+        }
+        .upper-content table th,
+        .upper-content table td {
+            border: 0.5px solid #000;
+            padding: 4px;
+            vertical-align: top;
+        }
+        .upper-content table th {
+            background-color: #f9f9f9;
+            font-weight: bold;
+        }
+
         #items {
             border: 0.5px solid black;
             width: 100%;
@@ -114,7 +134,7 @@ $base_fontsize = (!empty($fontsize)) ? $fontsize . 'pt' : '9pt';
     </tr>
 </table>
 
-<div style="margin-top: 10px;">
+<div class="upper-content" style="margin-top: 10px;">
     <?= $upper_content ?>
 </div>
 
