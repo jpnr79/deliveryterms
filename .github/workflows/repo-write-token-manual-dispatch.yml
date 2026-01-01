@@ -14,9 +14,15 @@ permissions:
 jobs:
   manual-test:
     runs-on: ubuntu-latest
-    if: ${{ secrets.REPO_WRITE_TOKEN }}
 
     steps:
+      - name: Ensure REPO_WRITE_TOKEN exists
+        run: |
+          if [ -z "${{ secrets.REPO_WRITE_TOKEN }}" ]; then
+            echo "REPO_WRITE_TOKEN is not set. Aborting." >&2
+            exit 1
+          fi
+
       - name: Manual REPO_WRITE_TOKEN PR update
         uses: actions/github-script@v6
         with:
