@@ -8,8 +8,20 @@ jobs:
   pr-lint:
     name: Lint JS and report results
     runs-on: [self-hosted, linux]
+    concurrency:
+      group: ${{ github.workflow }}-pr-lint-${{ github.head_ref || github.ref }}
+      cancel-in-progress: true
 
     steps:
+      - name: Preflight check (binaries)
+        run: |
+          echo "Preflight checks" > preflight.txt
+          echo "node: $(node --version 2>/dev/null || echo 'missing')" >> preflight.txt
+          echo "npm: $(npm --version 2>/dev/null || echo 'missing')" >> preflight.txt
+          echo "php: $(php --version 2>/dev/null | head -n1 || echo 'missing')" >> preflight.txt
+          echo "mysql: $(mysql --version 2>/dev/null || echo 'missing')" >> preflight.txt
+          echo "fonts: $(fc-list | head -n 1 || echo 'no-fonts')" >> preflight.txt
+
       - name: Checkout
         uses: actions/checkout@v4
 
@@ -17,14 +29,16 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: '18'
+          cache: 'npm'
 
-      - name: Cache npm
+      - name: Cache npm (fallback)
         uses: actions/cache@v4
         with:
           path: ~/.npm
           key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
           restore-keys: |
             ${{ runner.os }}-node-
+
       - name: Ensure npm registry
         run: |
           echo 'Setting npm registry to public registry.npmjs.org'
@@ -34,10 +48,21 @@ jobs:
           npm config get registry
 
       - name: Install deps
-      run: |
-          if [ -f package-lock.json ]; then npm ci --legacy-peer-deps; else npm init -y && npm i -D eslint prettier --legacy-peer-deps; fi
+        id: install_deps
+        run: |
+          set -e
+          echo "Using npm registry: $(npm config get registry || echo 'unknown')"
+          if [ -f package-lock.json ]; then
+            echo "Running: npm ci --legacy-peer-deps (fallback to npm install if it fails)"
+            npm ci --legacy-peer-deps || { echo "npm ci failed, running npm install --legacy-peer-deps"; npm install --legacy-peer-deps || true; }
+          else
+            echo "No package-lock.json: installing dev deps"
+            npm i -D eslint prettier --legacy-peer-deps || npm install --legacy-peer-deps || true
+          fi
+        shell: bash
 
       - name: Run lint and format check (capture output)
+        id: lint_check
         run: |
           set -o pipefail
           npm run lint 2>&1 | tee lint-output.txt || true
@@ -46,7 +71,20 @@ jobs:
           if [ -s format-output.txt ] && ! grep -q "All matched files use Prettier code style" format-output.txt; then FORMAT_STATUS="fail"; else FORMAT_STATUS="ok"; fi
           if [ "$LINT_STATUS" = "ok" ] && [ "$FORMAT_STATUS" = "ok" ]; then echo "ok" > result.txt; else echo "fail" > result.txt; fi
 
+      - name: Upload debug artifacts on failure
+        if: ${{ failure() }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: pr-lint-logs
+          path: |
+            lint-output.txt
+            format-output.txt
+            preflight.txt
+            npm-debug.log
+            .npm/_logs || true
+
       - name: Update PR body with a compact lint status (insert/update markers)
+        if: ${{ github.event.pull_request && (github.event.pull_request.head.repo.full_name == github.repository) }}
         uses: actions/github-script@v6
         with:
           script: |
@@ -98,6 +136,6 @@ jobs:
             }
 
       - name: Fail job if issues found
-        if: ${{ steps['Run lint and format check (capture output)'].outcome == 'success' && (contains(fromJSON('[]'), 'noop') == false) }}
+        if: ${{ always() }}
         run: |
           if [ -f result.txt ] && grep -q "fail" result.txt; then echo "Lint or format issues found"; exit 1; else echo "All checks passed"; fi

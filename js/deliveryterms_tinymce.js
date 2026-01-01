@@ -8,18 +8,58 @@
         text: 'Table',
         fetch: function (callback) {
           callback([
-            { type: 'menuitem', text: 'Insert row before', onAction: function () { editor.execCommand('mceTableInsertRowBefore'); } },
-            { type: 'menuitem', text: 'Insert row after', onAction: function () { editor.execCommand('mceTableInsertRowAfter'); } },
-            { type: 'menuitem', text: 'Delete row', onAction: function () { editor.execCommand('mceTableDeleteRow'); } },
-            { type: 'menuitem', text: 'Insert column before', onAction: function () { editor.execCommand('mceTableInsertColBefore'); } },
-            { type: 'menuitem', text: 'Insert column after', onAction: function () { editor.execCommand('mceTableInsertColAfter'); } },
-            { type: 'menuitem', text: 'Delete column', onAction: function () { editor.execCommand('mceTableDeleteCol'); } }
+            {
+              type: 'menuitem',
+              text: 'Insert row before',
+              onAction: function () {
+                editor.execCommand('mceTableInsertRowBefore');
+              },
+            },
+            {
+              type: 'menuitem',
+              text: 'Insert row after',
+              onAction: function () {
+                editor.execCommand('mceTableInsertRowAfter');
+              },
+            },
+            {
+              type: 'menuitem',
+              text: 'Delete row',
+              onAction: function () {
+                editor.execCommand('mceTableDeleteRow');
+              },
+            },
+            {
+              type: 'menuitem',
+              text: 'Insert column before',
+              onAction: function () {
+                editor.execCommand('mceTableInsertColBefore');
+              },
+            },
+            {
+              type: 'menuitem',
+              text: 'Insert column after',
+              onAction: function () {
+                editor.execCommand('mceTableInsertColAfter');
+              },
+            },
+            {
+              type: 'menuitem',
+              text: 'Delete column',
+              onAction: function () {
+                editor.execCommand('mceTableDeleteCol');
+              },
+            },
           ]);
-        }
+        },
       });
 
       // Try to insert the button into existing toolbar if possible
-      var toolbars = editor.settings.toolbar ? editor.settings.toolbar.split('|').map(function(t){ return t.trim(); }) : [];
+      var toolbars = editor.settings.toolbar
+        ? editor.settings.toolbar.split('|').map(function (t) {
+            return t.trim();
+          })
+        : [];
       // Only add if not already present
       if (!editor.settings.toolbar.includes('deliveryterms_table_menu')) {
         editor.settings.toolbar = 'deliveryterms_table_menu | ' + editor.settings.toolbar;
@@ -31,24 +71,32 @@
 
   function enhanceExistingEditors() {
     if (!window.tinymce) return;
-    window.tinymce.editors.forEach(function (ed) { addTableMenu(ed); });
+    window.tinymce.editors.forEach(function (ed) {
+      addTableMenu(ed);
+    });
   }
 
   // When an editor is added, TinyMCE fires 'AddEditor' event on the window
   if (window.tinymce) {
     enhanceExistingEditors();
     window.addEventListener('AddEditor', function (e) {
-      try { addTableMenu(window.tinymce.get(e.detail)); } catch (e) { /* ignore */ }
+      try {
+        addTableMenu(window.tinymce.get(e.detail));
+      } catch (e) {
+        /* ignore */
+      }
     });
   }
 
   // As a fallback, poll briefly for tinymce to appear (covers late initialization)
   var attempts = 0;
-  var poll = setInterval(function() {
+  var poll = setInterval(function () {
     if (window.tinymce) {
       enhanceExistingEditors();
       clearInterval(poll);
     }
-    if (++attempts > 10) { clearInterval(poll); }
+    if (++attempts > 10) {
+      clearInterval(poll);
+    }
   }, 500);
 })();

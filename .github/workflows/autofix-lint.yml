@@ -1,0 +1,83 @@
+name: Auto-fix lint & format
+
+on:
+  workflow_dispatch:
+    inputs:
+      branch:
+        description: 'Target branch to update'
+        required: false
+        default: 'ci/self-hosted-improve'
+  push:
+    branches:
+      - 'ci/self-hosted-improve'
+
+permissions:
+  contents: write
+
+jobs:
+  autofix:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+
+      - name: Install dependencies
+        run: |
+          npm ci --no-audit --no-fund || npm install --no-audit --no-fund --legacy-peer-deps
+
+      - name: Run Prettier
+        run: |
+          npm run format
+
+      - name: Run ESLint --fix
+        run: |
+          npm run lint:fix || true
+
+      - name: Check for changes
+        id: gitdiff
+        run: |
+          git status --porcelain
+          if git diff --quiet -- package-lock.json js tests; then
+            echo "changed=false" >> $GITHUB_OUTPUT
+          else
+            echo "changed=true" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Abort if no change
+        if: steps.gitdiff.outputs.changed == 'false'
+        run: |
+          echo "No changes from auto-fix; nothing to commit."
+
+      - name: Commit and push fixes
+        if: steps.gitdiff.outputs.changed == 'true'
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git commit -m "chore(ci): apply automatic format & lint fixes"
+
+          # Ensure remote up to date and rebase
+          BRANCH=${{ github.event.inputs.branch || github.ref_name }}
+          git fetch origin $BRANCH --depth=1 || true
+          git pull --rebase origin $BRANCH || true
+
+          git push https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }} HEAD:${BRANCH}
+
+      - name: Create PR comment
+        if: steps.gitdiff.outputs.changed == 'true'
+        uses: actions/github-script@v6
+        with:
+          script: |
+            const branch = `${github.event.inputs.branch || github.ref_name}`;
+            const pr = (await github.rest.pulls.list({ owner: context.repo.owner, repo: context.repo.repo, head: `${context.repo.owner}:${branch}` })).data[0];
+            if (pr) {
+              await github.rest.issues.createComment({ owner: context.repo.owner, repo: context.repo.repo, issue_number: pr.number, body: `Applied automatic Prettier & ESLint fixes to branch ${branch}. Please review changes.` });
+            }

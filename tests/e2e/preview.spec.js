@@ -20,11 +20,13 @@ test.describe('Deliveryterms preview modal', () => {
     await page.fill('input[name="pass"]', PASS);
     await Promise.all([
       page.waitForNavigation({ waitUntil: 'networkidle' }),
-      page.click('button[type="submit"]')
+      page.click('button[type="submit"]'),
     ]);
 
     // Go to template edit page
-    await page.goto(`${BASE}/plugins/deliveryterms/front/config.form.php?id=${TEMPLATE_ID}&update=1`);
+    await page.goto(
+      `${BASE}/plugins/deliveryterms/front/config.form.php?id=${TEMPLATE_ID}&update=1`
+    );
 
     // Ensure Preview button exists
     const previewBtn = page.locator('button:has-text("Preview")');
@@ -32,19 +34,24 @@ test.describe('Deliveryterms preview modal', () => {
 
     // Toggle TipTap PoC editor (if present) and insert a header to exercise the editor path
     const toggle = page.locator('#tiptap_poc_toggle');
-    if (await toggle.count() > 0) {
+    if ((await toggle.count()) > 0) {
       await toggle.check();
       // Wait for the editor element
       await page.waitForSelector('#tiptap-poc-editor', { state: 'visible', timeout: 5000 });
       // Click Insert Header
       const insertBtn = page.locator('button:has-text("Insert Header")');
-      if (await insertBtn.count() > 0) { await insertBtn.click(); }
+      if ((await insertBtn.count()) > 0) {
+        await insertBtn.click();
+      }
     }
 
     // Wait for the preview.php response and click preview
     const [response] = await Promise.all([
-      page.waitForResponse(resp => resp.url().includes('/plugins/deliveryterms/front/preview.php') && resp.status() === 200),
-      previewBtn.click()
+      page.waitForResponse(
+        (resp) =>
+          resp.url().includes('/plugins/deliveryterms/front/preview.php') && resp.status() === 200
+      ),
+      previewBtn.click(),
     ]);
 
     // Assert content-type is PDF
@@ -58,7 +65,7 @@ test.describe('Deliveryterms preview modal', () => {
 
     // Close modal
     const closeBtn = page.locator('#deliverytermsPreviewModal button.btn-close');
-    if (await closeBtn.count() > 0) {
+    if ((await closeBtn.count()) > 0) {
       await closeBtn.click();
     }
   });
