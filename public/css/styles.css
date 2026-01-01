@@ -2,3 +2,13 @@
 {
 	color: #6c757d !important;
 }
+
+/* TipTap PoC styles */
+.tiptap-poc-editor {
+  min-height: 200px;
+  border: 1px solid #dcdcdc;
+  padding: 12px;
+  border-radius: 4px;
+  background: #fff;
+}
+.tiptap-poc-toolbar { margin-bottom: 8px; }

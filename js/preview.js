@@ -14,20 +14,73 @@
     }
   }
 
-  function openPreview(html) {
-    // create a form to POST to preview endpoint and open in new tab
-    var form = document.createElement('form');
-    form.method = 'POST';
-    form.action = window.location.origin + '/plugins/deliveryterms/front/preview.php';
-    form.target = '_blank';
+  async function openPreview(html) {
+    // Send HTML to preview endpoint via fetch and display PDF in modal
     var token = document.querySelector('input[name="_glpi_csrf_token"]');
-    if (token) {
-      var t = document.createElement('input'); t.type = 'hidden'; t.name = '_glpi_csrf_token'; t.value = token.value; form.appendChild(t);
+    var tokenVal = token ? token.value : (document.querySelector('meta[property="glpi:csrf_token"]') ? document.querySelector('meta[property="glpi:csrf_token"]').getAttribute('content') : '');
+
+    var fd = new FormData();
+    fd.append('_glpi_csrf_token', tokenVal);
+    fd.append('html', html);
+
+    // create or reuse modal
+    var existing = document.getElementById('deliverytermsPreviewModal');
+    if (!existing) {
+      var modal = document.createElement('div');
+      modal.className = 'modal fade';
+      modal.id = 'deliverytermsPreviewModal';
+      modal.tabIndex = -1;
+      modal.innerHTML = "<div class='modal-dialog modal-xl modal-dialog-centered' style='max-width:95%;height:95%;'><div class='modal-content' style='height:95%;'><div class='modal-header'><h5 class='modal-title'>Preview</h5><button type='button' class='btn-close' data-bs-dismiss='modal' aria-label='Close'></button></div><div class='modal-body p-0' style='height:calc(100% - 56px);'><div id='deliverytermsPreviewBody' style='width:100%;height:100%;display:flex;align-items:center;justify-content:center;'><div class="spinner-border text-primary" role="status"><span class="visually-hidden">Loading...</span></div></div></div></div></div>";
+      document.body.appendChild(modal);
     }
-    var input = document.createElement('input'); input.type = 'hidden'; input.name = 'html'; input.value = html; form.appendChild(input);
-    document.body.appendChild(form);
-    form.submit();
-    document.body.removeChild(form);
+
+    var modalEl = document.getElementById('deliverytermsPreviewModal');
+    var bodyEl = document.getElementById('deliverytermsPreviewBody');
+
+    // show loading spinner
+    bodyEl.innerHTML = '<div class="spinner-border text-primary" role="status"><span class="visually-hidden">Loading...</span></div>';
+
+    try {
+      var resp = await fetch(window.location.origin + '/plugins/deliveryterms/front/preview.php', {
+        method: 'POST',
+        body: fd,
+        credentials: 'same-origin'
+      });
+
+      if (!resp.ok) {
+        var txt = await resp.text();
+        bodyEl.innerHTML = '<div class="p-3">Error: ' + resp.status + ' - ' + txt + '</div>';
+      } else {
+        var contentType = resp.headers.get('content-type') || '';
+        var blob = await resp.blob();
+        if (contentType.indexOf('application/pdf') !== -1) {
+          var url = URL.createObjectURL(blob);
+          // insert iframe
+          bodyEl.innerHTML = '<iframe src="' + url + '" style="width:100%;height:100%;border:0;" allowfullscreen></iframe>';
+
+          // cleanup when modal hidden
+          modalEl.addEventListener('hidden.bs.modal', function cleanup(){
+            try { URL.revokeObjectURL(url); } catch(e){}
+            modalEl.removeEventListener('hidden.bs.modal', cleanup);
+          });
+        } else {
+          // display textual response
+          var text = await blob.text();
+          bodyEl.innerHTML = '<div class="p-3">Preview returned: ' + text + '</div>';
+        }
+      }
+    } catch (e) {
+      bodyEl.innerHTML = '<div class="p-3">Preview failed: ' + e.message + '</div>';
+    }
+
+    // show modal using Bootstrap's JS API if available
+    if (window.bootstrap && typeof window.bootstrap.Modal === 'function') {
+      var modalInstance = new window.bootstrap.Modal(modalEl);
+      modalInstance.show();
+    } else {
+      // fallback: make visible
+      modalEl.style.display = 'block';
+    }
   }
 
   function getCombinedHtml() {
