@@ -619,7 +619,24 @@ class PluginDeliverytermsGenerate extends CommonDBTM {
 
             // Create Document using the filename only (no slashes) so GLPI can move it securely
             $doc_id = self::createDoc($doc_name, $owner, $notes, $title, $id); 
-            
+
+            // Keep a human-friendly copy in GLPI_VAR_DIR/PDF/TERMS for easier access and organization.
+            // Note: GLPI will still move the original uploaded file into its internal structure (e.g. PDF/b3/...);
+            // this copy is only for convenience and does not affect GLPI's storage mechanism.
+            $doc_req = $DB->request('glpi_documents', ['id' => $doc_id]);
+            if ($doc_row = $doc_req->current()) {
+                $stored_path = GLPI_VAR_DIR . '/' . ($doc_row['filepath'] ?? '');
+                $friendly_dir = GLPI_VAR_DIR . '/PDF/TERMS';
+                if (!is_dir($friendly_dir)) {
+                    @mkdir($friendly_dir, 0755, true);
+                }
+                if (!empty($stored_path) && is_readable($stored_path) && is_file($stored_path)) {
+                    @copy($stored_path, $friendly_dir . '/' . ($doc_row['filename'] ?? $doc_name));
+                } else {
+                    error_log('[deliveryterms] Could not copy final stored document to PDF/TERMS: ' . $stored_path);
+                }
+            }
+
             if ($email_mode == 1) {
                 self::sendMail($doc_id, $send_user, $email_subject, $email_content, $recipients, $id);
             }
