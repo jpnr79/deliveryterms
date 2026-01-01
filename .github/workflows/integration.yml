@@ -81,3 +81,88 @@ jobs:
           # Run the headless curl-based UI test script
           chmod +x plugins/deliveryterms/tests/ui_generate_curl.sh
           plugins/deliveryterms/tests/ui_generate_curl.sh "$GLPI_URL" "$GLPI_UI_USER" "$GLPI_UI_PASS" "$GLPI_TEMPLATE_ID" "$GLPI_TARGET_USER_ID"
+
+      - name: Optional: Cache npm dependencies for Node steps
+        if: ${{ secrets.GLPI_UI_USER && secrets.GLPI_UI_PASS && secrets.GLPI_TEMPLATE_ID }}
+        uses: actions/cache@v4
+        with:
+          path: ~/.npm
+          key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-node-
+
+      - name: Set up Node.js (for Playwright)
+        if: ${{ secrets.GLPI_UI_USER && secrets.GLPI_UI_PASS && secrets.GLPI_TEMPLATE_ID }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+
+      - name: Optional: Cache npm dependencies for Playwright
+        if: ${{ secrets.GLPI_UI_USER && secrets.GLPI_UI_PASS && secrets.GLPI_TEMPLATE_ID }}
+        uses: actions/cache@v4
+        with:
+          path: ~/.npm
+          key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-node-
+
+      - name: Optional: Run Playwright E2E preview test (guarded by secrets)
+        if: ${{ secrets.GLPI_UI_USER && secrets.GLPI_UI_PASS && secrets.GLPI_TEMPLATE_ID }}
+        env:
+          GLPI_URL: http://127.0.0.1:8000
+          GLPI_UI_USER: ${{ secrets.GLPI_UI_USER }}
+          GLPI_UI_PASS: ${{ secrets.GLPI_UI_PASS }}
+          GLPI_TEMPLATE_ID: ${{ secrets.GLPI_TEMPLATE_ID }}
+        run: |
+          # Start PHP built-in server in background (if not already started)
+          nohup php -S 127.0.0.1:8000 -t /var/www/glpi > /tmp/php_server.log 2>&1 || true
+          # Wait for server to respond
+          for i in {1..30}; do
+            if curl -sSf "$GLPI_URL/index.php" >/dev/null 2>&1; then
+              echo "Server up"; break
+            fi
+            sleep 1
+          done
+
+          # Ensure Playwright deps are installed (use cached npm where possible)
+          if [ -f package-lock.json ]; then
+            npm ci
+          else
+            npm init -y
+            npm i -D @playwright/test
+          fi
+
+          # Build the bundled TipTap editor so tests exercise bundled assets
+          if npm run build:editor --silent; then
+            echo "Editor build succeeded";
+          else
+            echo "Editor build failed"; exit 1;
+          fi
+
+          npx playwright install --with-deps
+
+          # Run only the preview spec, generate HTML report and retain artifacts on failure (video, trace, screenshots)
+          npx playwright test tests/e2e/preview.spec.js --reporter=list,html --output=playwright-results --video=retain-on-failure --trace=retain-on-failure --screenshot=only-on-failure
+
+      - name: Print Playwright HTML report info (if present)
+        if: ${{ always() && secrets.GLPI_UI_USER && secrets.GLPI_UI_PASS && secrets.GLPI_TEMPLATE_ID }}
+        run: |
+          if [ -d playwright-report ]; then
+            echo "Playwright HTML report generated at playwright-report/index.html";
+            ls -la playwright-report | sed -n '1,100p';
+            if [ -f playwright-report/index.html ]; then echo "Report index.html present"; fi
+          else
+            echo "No playwright-report directory found";
+          fi
+
+      - name: Upload Playwright artifacts (videos, traces, screenshots and HTML report)
+        if: ${{ always() && secrets.GLPI_UI_USER && secrets.GLPI_UI_PASS && secrets.GLPI_TEMPLATE_ID }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-preview-artifacts
+          path: |
+            playwright-results
+            playwright-report
+            test-results
+            playwright-report/**
+            playwright-results/**

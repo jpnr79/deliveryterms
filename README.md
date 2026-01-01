@@ -75,7 +75,7 @@ PHP 8.0.15
   - For development, the PoC previously used CDN UMD builds; the plugin now supports a **bundled build** for production. To build the bundled editor locally run:
     - `npm ci`
     - `npm run build:editor` (this creates `public/js/tiptap_bundle.js`)
-  - CI: The GitHub Actions workflow will use npm caching and the Playwright job installs npm deps; ensure `npm run build:editor` is executed in CI if you plan to test bundled assets in the workflow.
+  - CI: The GitHub Actions workflow will use npm caching and the Playwright job installs npm deps; the workflow now executes `npm run build:editor` in CI before running the Playwright spec so the bundled editor is available during E2E.
 - Start a local PHP server serving GLPI's public dir (example):
   - `nohup php -S 127.0.0.1:8000 -t /var/www/glpi/public &`
 - Run the headless script (example):
