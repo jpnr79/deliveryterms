@@ -183,3 +183,42 @@ jobs:
             test-results
             playwright-report/**
             playwright-results/**
+      - name: Update PR(s) with artifacts link (if applicable)
+        if: ${{ always() && secrets.GLPI_UI_USER && secrets.GLPI_PASS && secrets.GLPI_TEMPLATE_ID }}
+        uses: actions/github-script@v6
+        with:
+          script: |
+            const runId = process.env.GITHUB_RUN_ID;
+            const artifactsUrl = `https://github.com/${context.repo.owner}/${context.repo.repo}/actions/runs/${runId}/artifacts`;
+            const commitSha = process.env.GITHUB_SHA;
+
+            // Find PRs associated with this commit
+            const prsResp = await github.rest.repos.listPullRequestsAssociatedWithCommit({ owner: context.repo.owner, repo: context.repo.repo, commit_sha: commitSha });
+            const prs = prsResp.data || [];
+            if (!prs.length) { console.log('No PRs associated with this commit. Skipping PR body update.'); return; }
+
+            for (const pr of prs) {
+              const prNumber = pr.number;
+              const { data: prData } = await github.rest.pulls.get({ owner: context.repo.owner, repo: context.repo.repo, pull_number: prNumber });
+              const body = prData.body || '';
+              const markerStart = '<!-- deliveryterms-artifacts:start -->';
+              const markerEnd = '<!-- deliveryterms-artifacts:end -->';
+              const summary = `Artifacts: [playwright-preview-artifacts](${artifactsUrl}) (includes HTML report, videos and traces)`;
+
+              if (body.indexOf(markerStart) !== -1) {
+                const startIdx = body.indexOf(markerStart);
+                const endIdx = body.indexOf(markerEnd, startIdx);
+                let newBody;
+                if (endIdx !== -1) {
+                  newBody = body.slice(0, startIdx) + markerStart + '\n' + summary + '\n' + markerEnd + body.slice(endIdx + markerEnd.length);
+                } else {
+                  newBody = body.slice(0, startIdx) + markerStart + '\n' + summary + '\n' + markerEnd;
+                }
+                await github.rest.pulls.update({ owner: context.repo.owner, repo: context.repo.repo, pull_number: prNumber, body: newBody });
+                console.log(`Updated PR #${prNumber} with artifact link`);
+              } else {
+                const newBody = markerStart + '\n' + summary + '\n' + markerEnd + '\n\n' + body;
+                await github.rest.pulls.update({ owner: context.repo.owner, repo: context.repo.repo, pull_number: prNumber, body: newBody });
+                console.log(`Prepended artifact link to PR #${prNumber}`);
+              }
+            }
