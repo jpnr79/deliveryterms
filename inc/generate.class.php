@@ -457,8 +457,7 @@ class PluginDeliverytermsGenerate extends CommonDBTM {
             if ($Doc->fields) {
                 $filename = htmlescape($Doc->getField('filename') ?: $Doc->getField('name') ?: '');
                 $dlHref = '?download=' . htmlescape($exports['document_id']);
-                // Show pdf icon and truncated filename while keeping full name in title
-                echo "<td style='width:320px;'><a href='".$dlHref."' title='".$filename."'><i class='fas fa-file-pdf me-1'></i><span style='display:inline-block;max-width:260px;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;'>".$filename."</span></a></td>";
+                echo "<td style='width:320px;'><a href='".$dlHref."' title='".$filename."'>".$filename."</a></td>";
             } else {
                 echo "<td>-</td>";
             }
