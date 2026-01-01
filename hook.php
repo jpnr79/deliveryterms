@@ -186,17 +186,22 @@ function plugin_deliveryterms_install(): bool
         ) DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci"
     );
 
-    // Per-template filename pattern (optional)
-    // Add column if missing (for upgrades)
+    // Per-template filename pattern (optional) and document model
+    // Add columns if missing (for upgrades)
     try {
         if ($DB->tableExists('glpi_plugin_deliveryterms_config')) {
             $field = $DB->getField('glpi_plugin_deliveryterms_config', 'filename_pattern', false);
             if (!$field) {
                 $DB->doQuery("ALTER TABLE glpi_plugin_deliveryterms_config ADD COLUMN filename_pattern VARCHAR(255) DEFAULT NULL");
             }
+            $field2 = $DB->getField('glpi_plugin_deliveryterms_config', 'doc_model', false);
+            if (!$field2) {
+                // Add a compact field to hold per-template document model identifier
+                $DB->doQuery("ALTER TABLE glpi_plugin_deliveryterms_config ADD COLUMN doc_model VARCHAR(64) DEFAULT NULL");
+            }
         }
     } catch (\Throwable $e) {
-        error_log('[deliveryterms] Could not ensure filename_pattern column: ' . $e->getMessage());
+        error_log('[deliveryterms] Could not ensure config columns (filename_pattern/doc_model): ' . $e->getMessage());
     }
 
     // Plugin settings table (store key/value options like tab_itemtypes)

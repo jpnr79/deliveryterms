@@ -145,7 +145,8 @@ class PluginDeliverytermsConfig extends CommonDBTM {
 		echo "<tr><td>" . dgettext('deliveryterms', 'Font size') . "</td><td><select name='fontsize' class='form-select' style='max-width:200px;'>";
 		foreach($fontsizes as $fsize => $fs) echo "<option value='$fsize' ".($fsize == $fontsize ? "selected" : "").">$fs</option>";
 		echo "</select></td></tr>";
-
+		// Field 4.1: Nº Document Model (per-template)
+		echo "<tr><td>" . dgettext('deliveryterms', 'Nº Document Model') . "</td><td><input type='text' name='doc_model' class='form-control' value='".htmlescape($doc_model ?? '')."'><small class='text-muted'>This value is available to templates as <code>{docmodel}</code> and can be used in filename patterns.</small></td></tr>";
 		// Field 5: Word Breaking (Radio)
 		echo "<tr><td>" . dgettext('deliveryterms', 'Word breaking') . "</td><td>
 				<div class='form-check form-check-inline'><input class='form-check-input' type='radio' name='breakword' value='1' ".($breakword == 1 ? "checked" : "")."> " . dgettext('deliveryterms', 'On') . "</div>
@@ -220,6 +221,9 @@ class PluginDeliverytermsConfig extends CommonDBTM {
 				<div class='form-check form-check-inline'><input class='form-check-input' type='radio' name='email_mode' value='1' ".($email_mode == 1 ? "checked" : "")."> " . dgettext('deliveryterms', 'ON') . "</div>
 				<div class='form-check form-check-inline'><input class='form-check-input' type='radio' name='email_mode' value='2' ".($email_mode == 2 ? "checked" : "")."> " . dgettext('deliveryterms', 'OFF') . "</div></td></tr>";
 
+		// Store doc model into $fields when saving
+		// (Handled below together with other fields)
+
 		// Field 16: Link to Email Template
 		echo "<tr><td>".__('Email template', 'deliveryterms')."</td><td><select name='email_template' class='form-select' style='max-width:300px;'>";
         foreach ($DB->request(['FROM' => 'glpi_plugin_deliveryterms_emailconfig']) as $list) {
@@ -283,7 +287,8 @@ class PluginDeliverytermsConfig extends CommonDBTM {
             'author_name'    => $_POST['author_name'],
             'author_state'   => isset($_POST['author_state']) ? (int) $_POST['author_state'] : null,
             'logo_width'     => isset($_POST['logo_width']) && $_POST['logo_width'] !== '' ? (int) $_POST['logo_width'] : null,
-            'logo_height'    => isset($_POST['logo_height']) && $_POST['logo_height'] !== '' ? (int) $_POST['logo_height'] : null
+            'logo_height'    => isset($_POST['logo_height']) && $_POST['logo_height'] !== '' ? (int) $_POST['logo_height'] : null,
+            'doc_model'      => isset($_POST['doc_model']) && $_POST['doc_model'] !== '' ? trim($_POST['doc_model']) : null,
         ];
 
         // Handle logo update or deletion

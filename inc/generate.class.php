@@ -588,6 +588,10 @@ class PluginDeliverytermsGenerate extends CommonDBTM {
             
             $content = str_replace("{items_table}", $table_html, $content);
             $upper_content = str_replace("{items_table}", $table_html, $upper_content);
+
+            // Replace per-template placeholders such as {docmodel}
+            $content = str_replace('{docmodel}', htmlescape($row['doc_model'] ?? ''), $content);
+            $upper_content = str_replace('{docmodel}', htmlescape($row['doc_model'] ?? ''), $upper_content);
             
             ob_start();
             include dirname(__FILE__).'/template.php';
@@ -646,11 +650,13 @@ class PluginDeliverytermsGenerate extends CommonDBTM {
             }
 
             // Replace placeholders
+            $doc_model_safe = preg_replace('/\s+/', '_', $row['doc_model'] ?? '');
             $replacements = [
                 '{type}' => $doc_type_safe,
                 '{YYYY}' => $year,
                 '{date}' => date('dmY'),
-                '{owner}' => preg_replace('/\s+/', '_', $owner)
+                '{owner}' => preg_replace('/\s+/', '_', $owner),
+                '{docmodel}' => $doc_model_safe
             ];
             if ($uses_seq) { $replacements['{seq}'] = sprintf('%04d', $seqnum); }
 
