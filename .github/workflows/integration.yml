@@ -201,12 +201,96 @@ jobs:
             echo "No HTML report found in artifacts"
           fi
 
+      - name: Smoke-check extracted HTML report
+        if: ${{ always() && secrets.GLPI_UI_USER && secrets.GLPI_PASS && secrets.GLPI_TEMPLATE_ID }}
+        run: |
+          if [ -f extracted_report/index.html ]; then
+            echo "Validating extracted_report/index.html...";
+            size=$(stat -c%s extracted_report/index.html || echo 0)
+            echo "Report size: ${size} bytes"
+            if [ "$size" -lt 200 ]; then
+              echo "HTML report too small or empty"; cat extracted_report/index.html; exit 1;
+            fi
+            # Basic content checks: must contain an html tag and a Playwright report header
+            if ! grep -qi '<html' extracted_report/index.html; then
+              echo "Missing <html> tag in report"; exit 1;
+            fi
+            if ! grep -qi 'playwright' extracted_report/index.html && ! grep -qi 'report' extracted_report/index.html; then
+              echo "Report does not contain expected 'playwright' or 'report' markers"; exit 1;
+            fi
+            echo "HTML report basic checks passed";
+
+            # Run a headless Playwright check to open the HTML and verify expected selectors
+            echo "Running Playwright-based validation..."
+            if [ -f package-lock.json ]; then
+              npm ci
+            else
+              npm init -y
+              npm i -D @playwright/test
+            fi
+            npx playwright install --with-deps
+            REPORT_PATH="$(pwd)/extracted_report/index.html" npx playwright test tests/e2e/validate_report.spec.js --reporter=list || (echo "Playwright validation failed"; cat extracted_report/index.html; exit 1)
+
+            echo "Playwright validation passed";
+          else
+            echo "No extracted HTML report to validate; skipping";
+          fi
+
       - name: Upload HTML report artifact (if present)
         if: ${{ always() && secrets.GLPI_UI_USER && secrets.GLPI_PASS && secrets.GLPI_TEMPLATE_ID }}
         uses: actions/upload-artifact@v4
         with:
           name: playwright-html-report
           path: extracted_report/index.html
+
+      - name: Prepare site content for Pages deploy (supports historical previews)
+        if: ${{ always() && secrets.GLPI_UI_USER && secrets.GLPI_PASS && secrets.GLPI_TEMPLATE_ID }}
+        run: |
+          mkdir -p site_content
+          if [ -f extracted_report/index.html ]; then
+            if [ "${PAGES_PREVIEW_KEEP_HISTORY:-}" = "true" ]; then
+              TS=$(date -u +'%Y%m%d-%H%M%SZ')
+              SUBPATH="preview/${TS}-${GITHUB_RUN_ID}"
+              mkdir -p "site_content/${SUBPATH}"
+              cp extracted_report/index.html "site_content/${SUBPATH}/index.html"
+              echo "PAGES_PREVIEW_SUBPATH=${SUBPATH}" >> $GITHUB_ENV
+              echo "PAGES_URL=https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}/${SUBPATH}/index.html" >> $GITHUB_ENV
+              echo "Prepared site_content with historical preview at ${SUBPATH}"
+            else
+              cp extracted_report/index.html site_content/index.html
+              echo "PAGES_PREVIEW_SUBPATH=" >> $GITHUB_ENV
+              echo "PAGES_URL=https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}/index.html" >> $GITHUB_ENV
+              echo "Prepared site_content with index.html"
+            fi
+          else
+            echo "No extracted HTML report found, preparing empty site_content"
+          fi
+
+      - name: Publish HTML report to GitHub Pages (temporary preview)
+        if: ${{ always() && secrets.GLPI_UI_USER && secrets.GLPI_PASS && secrets.GLPI_TEMPLATE_ID }}
+        uses: actions/upload-pages-artifact@v1
+        with:
+          path: site_content
+
+      - name: Deploy Pages artifact to GitHub Pages
+        if: ${{ always() && secrets.GLPI_UI_USER && secrets.GLPI_PASS && secrets.GLPI_TEMPLATE_ID }}
+        id: deploy_pages
+        uses: actions/deploy-pages@v1
+
+      - name: Wait for Pages URL to be available (short poll)
+        if: ${{ always() && secrets.GLPI_UI_USER && secrets.GLPI_PASS && secrets.GLPI_TEMPLATE_ID }}
+        run: |
+          PAGES_URL="${PAGES_URL:-}"
+          echo "Checking Pages URL: $PAGES_URL"
+          ok=0
+          if [ -z "$PAGES_URL" ]; then echo "No PAGES_URL set; skipping check"; exit 0; fi
+          for i in {1..10}; do
+            status=$(curl -s -o /dev/null -w "%{http_code}" "$PAGES_URL" || echo 000)
+            echo "Attempt $i: HTTP $status"
+            if [ "$status" -eq 200 ]; then ok=1; break; fi
+            sleep 2
+          done
+          if [ "$ok" -eq 1 ]; then echo "PAGES_URL=$PAGES_URL" >> $GITHUB_OUTPUT; else echo "PAGES_URL=" >> $GITHUB_OUTPUT; fi
 
       - name: Update PR(s) with artifacts link (direct artifact link if available)
         if: ${{ always() && secrets.GLPI_UI_USER && secrets.GLPI_PASS && secrets.GLPI_TEMPLATE_ID }}
@@ -246,10 +330,14 @@ jobs:
               const markerEnd = '<!-- deliveryterms-artifacts:end -->';
 
               let summary;
-              if (directArtifactUrl) {
-                summary = `Artifacts: [download playwright-preview-artifacts](${directArtifactUrl}) (direct ZIP download of HTML report, videos and traces)`;
+              if (process.env.PAGES_URL && process.env.PAGES_URL.length) {
+                summary = `Preview (HTML report): ${process.env.PAGES_URL}  \nDownload: [playwright-preview-artifacts](${directArtifactUrl || artifactsPageUrl})`;
               } else {
-                summary = `Artifacts: [playwright-preview-artifacts](${artifactsPageUrl}) (includes HTML report, videos and traces)`;
+                if (directArtifactUrl) {
+                  summary = `Artifacts: [download playwright-preview-artifacts](${directArtifactUrl}) (direct ZIP download of HTML report, videos and traces)`;
+                } else {
+                  summary = `Artifacts: [playwright-preview-artifacts](${artifactsPageUrl}) (includes HTML report, videos and traces)`;
+                }
               }
 
               if (body.indexOf(markerStart) !== -1) {

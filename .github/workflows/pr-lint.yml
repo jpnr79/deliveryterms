@@ -53,7 +53,20 @@ jobs:
             const markerStart = '<!-- deliveryterms-pr-lint:start -->';
             const markerEnd = '<!-- deliveryterms-pr-lint:end -->';
             const badge = (result === 'ok') ? '![JS Lint](https://img.shields.io/badge/JS%20Lint-Passed-brightgreen)' : '![JS Lint](https://img.shields.io/badge/JS%20Lint-Failed-red)';
-            const summary = `${badge}  \n**JS Lint & Format:** ${status}  \n**ESLint:** ${result === 'ok' ? 'OK' : 'Problems found'}  \n**Prettier:** ${result === 'ok' ? 'OK' : 'Problems found'}  \n\n<details>\n<summary>Details (truncated)</summary>\n\n**ESLint excerpt:**\n\n\`\`\`\n${lint}\n\`\`\`\n\n**Prettier excerpt:**\n\n\`\`\`\n${format}\n\`\`\`\n\n</details>`;
+            // Try to find the specific job HTML URL for the current workflow run so the badge links directly to the PR-lint job
+            let runUrl = `https://github.com/${context.repo.owner}/${context.repo.repo}/actions/runs/${process.env.GITHUB_RUN_ID}`;
+            try {
+              const jobsResp = await github.rest.actions.listJobsForWorkflowRun({ owner: context.repo.owner, repo: context.repo.repo, run_id: process.env.GITHUB_RUN_ID });
+              const jobs = jobsResp.data.jobs || [];
+              const job = jobs.find(j => j.name === 'pr-lint' || j.name === 'PR Lint' || j.name === 'pr-lint: Lint JS and report results' || j.name && j.name.toLowerCase().includes('lint'));
+              if (job && job.html_url) {
+                runUrl = job.html_url;
+              }
+            } catch (e) {
+              // ignore and fallback to run URL
+            }
+            const linkedBadge = `[${badge}](${runUrl})`;
+            const summary = `${linkedBadge}  \n**JS Lint & Format:** ${status}  \n**ESLint:** ${result === 'ok' ? 'OK' : 'Problems found'}  \n**Prettier:** ${result === 'ok' ? 'OK' : 'Problems found'}  \n\n<details>\n<summary>Details (truncated)</summary>\n\n**ESLint excerpt:**\n\n\`\`\`\n${lint}\n\`\`\`\n\n**Prettier excerpt:**\n\n\`\`\`\n${format}\n\`\`\`\n\n</details>`;
 
             // Get current PR body
             const { data: pr } = await github.rest.pulls.get({ owner: context.repo.owner, repo: context.repo.repo, pull_number: prNumber });
