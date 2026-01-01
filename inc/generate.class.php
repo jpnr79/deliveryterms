@@ -626,15 +626,9 @@ class PluginDeliverytermsGenerate extends CommonDBTM {
             $doc_req = $DB->request('glpi_documents', ['id' => $doc_id]);
             if ($doc_row = $doc_req->current()) {
                 $stored_path = GLPI_VAR_DIR . '/' . ($doc_row['filepath'] ?? '');
-                $friendly_dir = GLPI_VAR_DIR . '/PDF/TERMS';
-                if (!is_dir($friendly_dir)) {
-                    @mkdir($friendly_dir, 0755, true);
-                }
-                if (!empty($stored_path) && is_readable($stored_path) && is_file($stored_path)) {
-                    @copy($stored_path, $friendly_dir . '/' . ($doc_row['filename'] ?? $doc_name));
-                } else {
-                    error_log('[deliveryterms] Could not copy final stored document to PDF/TERMS: ' . $stored_path);
-                }
+                $stored_filename = $doc_row['filename'] ?? $doc_name;
+                // Try to create a symlink in PDF/TERMS pointing to the final stored document, fallback to copy if symlink not possible.
+                self::ensureTermsCopy($stored_path, $stored_filename, 90);
             }
 
             if ($email_mode == 1) {
@@ -881,7 +875,13 @@ class PluginDeliverytermsGenerate extends CommonDBTM {
                         error_log('[deliveryterms] Failed to attach document (sendOneMail): ' . $e->getMessage());
                     }
                 } else {
-                    error_log('[deliveryterms] Attachment skipped (sendOneMail); file not found or unreadable: ' . GLPI_VAR_DIR . '/' . $docFilepath);
+                    // If we couldn't find the file in its final location, try the convenience directory PDF/TERMS
+                    $fallback = GLPI_VAR_DIR . '/PDF/TERMS/' . $docFilename;
+                    if (!empty($docFilename) && is_readable($fallback) && is_file($fallback)) {
+                        try { $nmail->addAttachment($fallback, $docFilename); } catch (\Throwable $e) { error_log('[deliveryterms] Failed to attach fallback document (sendOneMail): ' . $e->getMessage()); }
+                    } else {
+                        error_log('[deliveryterms] Attachment skipped (sendOneMail); file not found or unreadable: ' . GLPI_VAR_DIR . '/' . $docFilepath . ' and fallback ' . $fallback);
+                    }
                 }
             }
         }
@@ -897,6 +897,62 @@ class PluginDeliverytermsGenerate extends CommonDBTM {
         Session::addMessageAfterRedirect(__('Email sent', 'deliveryterms')." to ".implode(", ", $final_recipients));
         return true;
     }       
+
+    /**
+     * Ensure a symlink (preferred) or copy exists in PDF/TERMS and cleanup old files
+     *
+     * @param string $stored_path absolute path to the file stored by GLPI
+     * @param string $filename filename to create in PDF/TERMS
+     * @param int $retention_days number of days after which old files are removed (0 to disable)
+     * @return bool true on success
+     */
+    private static function ensureTermsCopy(string $stored_path, string $filename, int $retention_days = 90): bool {
+        $friendly_dir = GLPI_VAR_DIR . '/PDF/TERMS';
+        if (!is_dir($friendly_dir)) { @mkdir($friendly_dir, 0755, true); }
+        $dest = $friendly_dir . '/' . $filename;
+
+        // If destination exists and hashes match, nothing to do
+        if (is_file($dest)) {
+            $src_sha = @sha1_file($stored_path) ?: '';
+            $dest_sha = @sha1_file($dest) ?: '';
+            if ($src_sha && $dest_sha && $src_sha === $dest_sha) { return true; }
+            @unlink($dest);
+        }
+
+        // Try symlink if available
+        if (function_exists('symlink')) {
+            try {
+                @unlink($dest);
+                if (@symlink($stored_path, $dest)) {
+                    self::cleanupTermsDir($friendly_dir, $filename, $retention_days);
+                    return true;
+                }
+            } catch (\Throwable $e) {
+                error_log('[deliveryterms] Symlink failed: ' . $e->getMessage());
+            }
+        }
+
+        // Fallback to copy
+        if (@copy($stored_path, $dest)) {
+            self::cleanupTermsDir($friendly_dir, $filename, $retention_days);
+            return true;
+        }
+
+        error_log('[deliveryterms] Failed to create terms copy or symlink for ' . $stored_path);
+        return false;
+    }
+
+    private static function cleanupTermsDir(string $dir, string $exclude_filename, int $retention_days = 90): void {
+        if ($retention_days <= 0) { return; }
+        $now = time();
+        foreach (glob($dir . '/*') as $f) {
+            if (basename($f) === $exclude_filename) { continue; }
+            $mtime = @filemtime($f) ?: 0;
+            if ($now - $mtime > ($retention_days * 86400)) {
+                @unlink($f);
+            }
+        }
+    }
 }
 ?>
 
