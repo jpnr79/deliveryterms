@@ -139,6 +139,19 @@ jobs:
             echo "Editor build failed"; exit 1;
           fi
 
+          # Smoke check: verify the bundle exists and contains TipTap markers
+          if [ -f public/js/tiptap_bundle.js ]; then
+            echo "Bundle exists: public/js/tiptap_bundle.js";
+            echo "Size: $(stat -c%s public/js/tiptap_bundle.js) bytes";
+            if grep -q "@tiptap" public/js/tiptap_bundle.js || grep -q "StarterKit" public/js/tiptap_bundle.js || grep -q "tiptap" public/js/tiptap_bundle.js; then
+              echo "Bundle contains TipTap markers";
+            else
+              echo "Bundle missing expected TipTap content"; exit 1;
+            fi
+          else
+            echo "Bundle not found: public/js/tiptap_bundle.js"; exit 1;
+          fi
+
           npx playwright install --with-deps
 
           # Run only the preview spec, generate HTML report and retain artifacts on failure (video, trace, screenshots)
