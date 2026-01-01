@@ -408,7 +408,6 @@ class PluginDeliverytermsGenerate extends CommonDBTM {
              echo "                  <th width='40'></th>";
         }
         echo "                  <th>".__('Name', 'deliveryterms')."</th>";
-        echo "                  <th>".__('Template', 'deliveryterms')."</th>";
         echo "                  <th>".__('Creation Date', 'deliveryterms')."</th>";
         echo "                  <th>".__('Download', 'deliveryterms')."</th>";
         echo "                  <th>".__('Creator', 'deliveryterms')."</th>";
@@ -455,8 +454,6 @@ class PluginDeliverytermsGenerate extends CommonDBTM {
                  echo "<span class='text-muted'>".__('Document not found', 'deliveryterms')."</span>";
             }
             echo "</td>";
-    
-            echo "<td>".htmlescape($exports['document_type'])."</td>";
             echo "<td>".htmlescape($exports['gen_date'])."</td>";
             echo "<td>".($Doc->fields ? $Doc->getDownloadLink() : '-')."</td>";
             echo "<td>".htmlescape($exports['author'])."</td>";
