@@ -1,0 +1,50 @@
+name: REPO_WRITE_TOKEN smoke test
+
+on:
+  pull_request_target:
+    types: [labeled]
+
+permissions:
+  contents: write
+
+jobs:
+  smoke-test:
+    # Run only when label 'autofix-allow' is added, the PR is from a fork, and the secret exists
+    if: ${{ github.event.label.name == 'autofix-allow' && github.event.pull_request.head.repo.full_name != github.repository && secrets.REPO_WRITE_TOKEN }}
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Smoke test - announce intent
+        run: |
+          echo "Running REPO_WRITE_TOKEN smoke test for PR #${{ github.event.pull_request.number }} (label: ${{ github.event.label.name }})"
+
+      - name: Update PR body using REPO_WRITE_TOKEN
+        uses: actions/github-script@v6
+        with:
+          github-token: ${{ secrets.REPO_WRITE_TOKEN }}
+          script: |
+            const pr = context.payload.pull_request;
+            const prNumber = pr.number;
+            const markerStart = '<!-- repo-write-token-smoke:start -->';
+            const markerEnd = '<!-- repo-write-token-smoke:end -->';
+            const now = new Date().toISOString();
+            const summary = `**SMOKE TEST**: Updated via \`REPO_WRITE_TOKEN\` at ${now}.`;
+            const body = pr.body || '';
+            const startIdx = body.indexOf(markerStart);
+            let newBody;
+            if (startIdx !== -1) {
+              const endIdx = body.indexOf(markerEnd, startIdx);
+              if (endIdx !== -1) {
+                newBody = body.slice(0, startIdx) + markerStart + '\n' + summary + '\n' + markerEnd + body.slice(endIdx + markerEnd.length);
+              } else {
+                newBody = body.slice(0, startIdx) + markerStart + '\n' + summary + '\n' + markerEnd;
+              }
+            } else {
+              newBody = markerStart + '\n' + summary + '\n' + markerEnd + '\n\n' + body;
+            }
+
+            await github.rest.pulls.update({ owner: context.repo.owner, repo: context.repo.repo, pull_number: prNumber, body: newBody });
+            await github.rest.issues.createComment({ owner: context.repo.owner, repo: context.repo.repo, issue_number: prNumber, body: `REPO_WRITE_TOKEN smoke test: I updated the PR body (opt-in). If unexpected, remove label 'autofix-allow' or the marker '[enable-autofix]'.` });
+
+      - name: Finished
+        run: echo "REPO_WRITE_TOKEN smoke test completed"

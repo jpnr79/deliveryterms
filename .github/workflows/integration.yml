@@ -132,7 +132,9 @@ jobs:
           cache: 'npm'
 
       - name: Cache Playwright browsers
+
         if: "${{ secrets.GLPI_UI_USER && secrets.GLPI_UI_PASS && secrets.GLPI_TEMPLATE_ID && secrets.GLPI_TARGET_USER_ID }}"
+
         uses: actions/cache@v4
         with:
           path: ~/.cache/ms-playwright
@@ -140,7 +142,7 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-playwright-
 
-      - name: "Optional: Cache npm dependencies for Playwright"
+- name: "Optional: Cache npm dependencies for Playwright"
         if: "${{ secrets.GLPI_UI_USER && secrets.GLPI_UI_PASS && secrets.GLPI_TEMPLATE_ID && secrets.GLPI_TARGET_USER_ID }}"
         uses: actions/cache@v4
         with:
@@ -216,7 +218,9 @@ jobs:
         if: ${{ failure() && secrets.GLPI_UI_USER && secrets.GLPI_UI_PASS && secrets.GLPI_TEMPLATE_ID }}
         uses: actions/upload-artifact@v4
         with:
+
           name: plugin-playwright-debug-artifacts
+
           path: |
             playwright-results
             playwright-report

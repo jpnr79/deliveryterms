@@ -18,6 +18,15 @@ jobs:
       cancel-in-progress: true
 
     steps:
+      - name: Preflight check (binaries)
+        run: |
+          echo "Preflight checks" > preflight.txt
+          echo "node: $(node --version 2>/dev/null || echo 'missing')" >> preflight.txt
+          echo "npm: $(npm --version 2>/dev/null || echo 'missing')" >> preflight.txt
+          echo "php: $(php --version 2>/dev/null | head -n1 || echo 'missing')" >> preflight.txt
+          echo "mysql: $(mysql --version 2>/dev/null || echo 'missing')" >> preflight.txt
+          echo "fonts: $(fc-list | head -n 1 || echo 'no-fonts')" >> preflight.txt
+
       - name: Checkout
         uses: actions/checkout@v4
 
@@ -25,8 +34,9 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: '18'
+          cache: 'npm'
 
-      - name: Cache npm
+      - name: Cache npm (fallback)
         uses: actions/cache@v4
         with:
           path: ~/.npm
@@ -34,10 +44,19 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-node-
 
+      - name: Ensure npm registry
+        run: |
+          echo 'Setting npm registry to public registry.npmjs.org'
+          npm config set registry https://registry.npmjs.org
+          npm --version
+          node --version
+          npm config get registry
+
       - name: Install deps
         id: install_deps
         run: |
           set -e
+
           REG="https://registry.npmjs.org"
           echo "Setting registry to $REG"
           npm config set registry "$REG" || true
@@ -47,10 +66,12 @@ jobs:
           else
             echo "No package-lock.json: installing dev deps"
             npm i -D eslint prettier --legacy-peer-deps --registry="$REG" || npm install --legacy-peer-deps --registry="$REG" || true
+
           fi
         shell: bash
 
       - name: Run lint and format check (capture output)
+        id: lint_check
         run: |
           set -o pipefail
           npm run lint 2>&1 | tee lint-output.txt || true
@@ -63,10 +84,12 @@ jobs:
         if: ${{ failure() }}
         uses: actions/upload-artifact@v4
         with:
+
           name: plugin-pr-lint-logs
           path: |
             lint-output.txt
             format-output.txt
+
             npm-debug.log
             .npm/_logs || true
 
@@ -165,6 +188,6 @@ jobs:
             await github.rest.issues.createComment({ owner: context.repo.owner, repo: context.repo.repo, issue_number: prNumber, body: `Applied compact lint summary via REPO_WRITE_TOKEN (opt-in). If you did not opt-in, remove the label \`autofix-allow\` or the marker \`[enable-autofix]\`.` });
 
       - name: Fail job if issues found
-        if: ${{ steps['Run lint and format check (capture output)'].outcome == 'success' && (contains(fromJSON('[]'), 'noop') == false) }}
+        if: ${{ always() }}
         run: |
           if [ -f result.txt ] && grep -q "fail" result.txt; then echo "Lint or format issues found"; exit 1; else echo "All checks passed"; fi

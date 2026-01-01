@@ -1,0 +1,87 @@
+name: Apply lint & format fixes
+
+on:
+  workflow_dispatch:
+    inputs:
+      branch:
+        description: 'Target branch to update'
+        required: false
+        default: 'ci/self-hosted-improve'
+  pull_request:
+    types: [opened, synchronize, reopened]
+
+permissions:
+  contents: write
+
+jobs:
+  fix-on-pr:
+    # Only run for PRs originating from the same repository
+    if: github.event.pull_request == null || github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout PR head
+        uses: actions/checkout@v4
+        with:
+          # For workflow_dispatch we use the provided branch input
+          ref: ${{ github.event.pull_request && github.event.pull_request.head.ref || github.event.inputs.branch }}
+          fetch-depth: 0
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+
+      - name: Install dependencies
+        run: |
+          npm ci --no-audit --no-fund || npm install --no-audit --no-fund --legacy-peer-deps
+
+      - name: Run Prettier
+        run: |
+          npm run format || true
+
+      - name: Run ESLint --fix
+        run: |
+          npm run lint:fix || true
+
+      - name: Show git diff
+        run: |
+          git status --porcelain
+          git --no-pager diff --name-only || true
+
+      - name: Commit and push fixes
+        id: push
+        run: |
+          set -e
+          if ! git diff-index --quiet HEAD --; then
+            git config user.name "github-actions[bot]"
+            git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+            git add -A
+            git commit -m "chore(ci): apply automatic Prettier & ESLint fixes"
+
+            BRANCH=${{ github.event.pull_request && github.event.pull_request.head.ref || github.event.inputs.branch }}
+            echo "Pushing fixes to branch: $BRANCH"
+            git fetch origin $BRANCH --depth=1 || true
+            git pull --rebase origin $BRANCH || true
+            git push https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }} HEAD:$BRANCH
+            echo "pushed=true" >> $GITHUB_OUTPUT
+          else
+            echo "pushed=false" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Create PR comment
+        if: steps.push.outputs.pushed == 'true' && github.event.pull_request != null
+        uses: actions/github-script@v6
+        with:
+          script: |
+            const prNum = context.payload.pull_request.number;
+            await github.rest.issues.createComment({ owner: context.repo.owner, repo: context.repo.repo, issue_number: prNum, body: `Applied automatic Prettier & ESLint fixes to branch ${context.payload.pull_request.head.ref}. Please check the changes.` });
+
+      - name: Upload diff artifact if push failed
+        if: steps.push.outputs.pushed != 'true'
+        uses: actions/upload-artifact@v4
+        with:
+          name: lint-diff
+          path: |
+            $(git --no-pager diff --name-only)
+            || true
