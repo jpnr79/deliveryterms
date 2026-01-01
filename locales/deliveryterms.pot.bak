@@ -1,0 +1,341 @@
+# Translation template for Delivery Terms
+msgid ""
+msgstr ""
+"Project-Id-Version: deliveryterms v1.0\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2025-12-31 00:00+0000\n"
+"PO-Revision-Date: 2025-12-31 00:00+0000\n"
+"Last-Translator: \n"
+"Language-Team: \n"
+"Language: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+#: inc/config.class.php:227
+msgid "Select who should generate the pdf"
+msgstr ""
+
+#: inc/config.class.php:234
+msgid "The user who generates the document"
+msgstr ""
+
+#: inc/config.class.php:148
+msgid "Document title"
+msgstr ""
+
+#: inc/config.class.php:149
+msgid "You can use {owner} here."
+msgstr ""
+
+#: inc/config.class.php:182
+msgid "You can use {owner} or {admin} here."
+msgstr ""
+
+#: setup.php:11
+msgid "Delivery Terms"
+msgstr ""
+
+#: setup.php:48
+msgid "This plugin requires GLPI >= %1$s and < %2$s"
+msgstr ""
+
+#: inc/config.class.php:34
+msgid "Templates settings"
+msgstr ""
+
+#: inc/config.class.php:45
+msgid "Email settings"
+msgstr ""
+
+#: inc/profile.class.php:33
+msgid "Delivery Terms"
+msgstr ""
+
+#: inc/profile.class.php:87
+msgid "Delivery Terms"
+msgstr ""
+
+#: inc/profile.class.php:99
+msgid "Save"
+msgstr ""
+
+#: inc/generate.class.php:23
+msgid "Delivery Terms"
+msgstr ""
+
+#: inc/generate.class.php:157
+msgid "Protocol Generation Options"
+msgstr ""
+
+#: inc/generate.class.php:174
+msgid "Create Protocol"
+msgstr ""
+
+#: inc/generate.class.php:187
+msgid "Add Manual Field"
+msgstr ""
+
+#: inc/generate.class.php:386
+msgid "Generated Protocols History"
+msgstr ""
+
+#: inc/config.class.php:115
+msgid "Portrait"
+msgstr ""
+
+#: inc/config.class.php:115
+msgid "Landscape"
+msgstr ""
+
+#: inc/config.class.php:123
+msgid "Crear Plantilla"
+msgstr ""
+
+#: inc/config.class.php:123
+msgid "Editar Plantilla"
+msgstr ""
+
+#: inc/config.class.php:128
+msgid "Nombre de la plantilla"
+msgstr ""
+
+#: inc/config.class.php:149
+msgid "You can use {owner} here."
+msgstr ""
+
+#: inc/config.class.php:157
+msgid "You can use {owner}, {admin}, {reg_num}, {title} or {category} here."
+msgstr ""
+
+#: inc/config.class.php:157
+msgid "Contenido"
+msgstr ""
+
+#: inc/config.class.php:162
+msgid "Footer"
+msgstr ""
+
+#: inc/config.class.php:165
+msgid "Orientación"
+msgstr ""
+
+#: inc/config.class.php:170
+msgid "Número de serie"
+msgstr ""
+
+#: inc/config.class.php:175
+msgid "Logo"
+msgstr ""
+
+#: inc/config.class.php:193
+msgid "Email template"
+msgstr ""
+
+#: inc/config.class.php:344
+msgid "Template name"
+msgstr ""
+
+#: inc/config.class.php:345
+msgid "Email subject"
+msgstr ""
+
+#: inc/config.class.php:346
+msgid "Email content"
+msgstr ""
+
+#: inc/config.class.php:347
+msgid "Add emails (separate with ;)"
+msgstr ""
+
+#: inc/config.class.php:267
+msgid "Settings saved"
+msgstr ""
+
+#: inc/config.class.php:316
+msgid "Template deleted"
+msgstr ""
+
+#: inc/config.class.php:375
+msgid "Email settings saved"
+msgstr ""
+
+#: inc/config.class.php:407
+msgid "Email template deleted"
+msgstr ""
+
+#: inc/generate.class.php:161
+msgid "Template"
+msgstr ""
+
+#: inc/generate.class.php:170
+msgid "Note"
+msgstr ""
+
+#: inc/generate.class.php:171
+msgid "Add a custom note to this protocol"
+msgstr ""
+
+#: inc/generate.class.php:186
+msgid "Select Items to Include"
+msgstr ""
+
+#: inc/generate.class.php:187
+msgid "Add Manual Field"
+msgstr ""
+
+#: inc/generate.class.php:195
+msgid "Type"
+msgstr ""
+
+#: inc/generate.class.php:196
+msgid "Manufacturer"
+msgstr ""
+
+#: inc/generate.class.php:197
+msgid "Model"
+msgstr ""
+
+#: inc/generate.class.php:198
+msgid "Name"
+msgstr ""
+
+#: inc/generate.class.php:199
+msgid "State"
+msgstr ""
+
+#: inc/generate.class.php:200
+msgid "Serial number"
+msgstr ""
+
+#: inc/generate.class.php:201
+msgid "Inventory number"
+msgstr ""
+
+#: inc/generate.class.php:202
+msgid "Comments"
+msgstr ""
+
+#: inc/generate.class.php:333
+msgid "Send Protocol by Email"
+msgstr ""
+
+#: inc/generate.class.php:345
+msgid "Manual Entry"
+msgstr ""
+
+#: inc/generate.class.php:357
+msgid "Use Email Template"
+msgstr ""
+
+#: inc/generate.class.php:376
+msgid "Cancel"
+msgstr ""
+
+#: inc/generate.class.php:377
+msgid "Send"
+msgstr ""
+
+#: inc/generate.class.php:394
+msgid "Are you sure you want to delete selected items?"
+msgstr ""
+
+#: inc/config.class.php:1
+msgid "Templates"
+msgstr ""
+
+#: inc/config.class.php:1
+msgid "Action"
+msgstr ""
+
+#: inc/config.class.php:1
+msgid "Delete file"
+msgstr ""
+
+#: inc/config.class.php:1
+msgid "Font"
+msgstr ""
+
+#: inc/config.class.php:1
+msgid "Font size"
+msgstr ""
+
+#: inc/config.class.php:1
+msgid "Word breaking"
+msgstr ""
+
+#: inc/config.class.php:1
+msgid "On"
+msgstr ""
+
+#: inc/config.class.php:1
+msgid "Off"
+msgstr ""
+
+#: inc/config.class.php:1
+msgid "Upper Content"
+msgstr ""
+
+#: inc/config.class.php:1
+msgid "Logo width (px)"
+msgstr ""
+
+#: inc/config.class.php:1
+msgid "Logo height (px)"
+msgstr ""
+
+#: inc/config.class.php:1
+msgid "Enable email autosending"
+msgstr ""
+
+#: inc/generate.class.php:394
+msgid "Delete Selected"
+msgstr ""
+
+#: inc/generate.class.php:409
+msgid "Name"
+msgstr ""
+
+#: inc/generate.class.php:410
+msgid "Template"
+msgstr ""
+
+#: inc/generate.class.php:411
+msgid "Creation Date"
+msgstr ""
+
+#: inc/generate.class.php:412
+msgid "Download"
+msgstr ""
+
+#: inc/generate.class.php:413
+msgid "Creator"
+msgstr ""
+
+#: inc/generate.class.php:414
+msgid "Comment"
+msgstr ""
+
+#: inc/generate.class.php:415
+msgid "Action"
+msgstr ""
+
+#: inc/generate.class.php:454
+msgid "Document not found"
+msgstr ""
+
+#: inc/generate.class.php:467
+msgid "Send Email"
+msgstr ""
+
+#: inc/generate.class.php:714
+msgid "Failed to send email"
+msgstr ""
+
+#: inc/generate.class.php:717
+msgid "Email sent"
+msgstr ""
+
+#: inc/generate.class.php:765
+msgid "No recipients specified"
+msgstr ""
