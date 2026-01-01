@@ -55,3 +55,29 @@ jobs:
         run: |
           php -f plugins/deliveryterms/tests/simulate_generate.php
           php -f plugins/deliveryterms/tests/simulate_generate.php --cleanup
+
+      - name: Run CLI UI render check (Term wording & icons)
+        run: |
+          php -f plugins/deliveryterms/tests/ui_render_generate_cli.php
+
+      - name: Optional: Run UI E2E (curl) against built-in PHP server (requires secrets)
+        if: ${{ secrets.GLPI_UI_USER && secrets.GLPI_UI_PASS && secrets.GLPI_TEMPLATE_ID && secrets.GLPI_TARGET_USER_ID }}
+        env:
+          GLPI_URL: http://127.0.0.1:8000
+          GLPI_UI_USER: ${{ secrets.GLPI_UI_USER }}
+          GLPI_UI_PASS: ${{ secrets.GLPI_UI_PASS }}
+          GLPI_TEMPLATE_ID: ${{ secrets.GLPI_TEMPLATE_ID }}
+          GLPI_TARGET_USER_ID: ${{ secrets.GLPI_TARGET_USER_ID }}
+        run: |
+          # Start PHP built-in server in background
+          nohup php -S 127.0.0.1:8000 -t /var/www/glpi > /tmp/php_server.log 2>&1 &
+          # Wait for server to respond
+          for i in {1..30}; do
+            if curl -sSf "$GLPI_URL/index.php" >/dev/null 2>&1; then
+              echo "Server up"; break
+            fi
+            sleep 1
+          done
+          # Run the headless curl-based UI test script
+          chmod +x plugins/deliveryterms/tests/ui_generate_curl.sh
+          plugins/deliveryterms/tests/ui_generate_curl.sh "$GLPI_URL" "$GLPI_UI_USER" "$GLPI_UI_PASS" "$GLPI_TEMPLATE_ID" "$GLPI_TARGET_USER_ID"
