@@ -117,6 +117,48 @@ jobs:
               await github.rest.pulls.update({ owner: context.repo.owner, repo: context.repo.repo, pull_number: prNumber, body: newBody });
             }
 
+      - name: Update PR body for opt-in forked PRs (using REPO_WRITE_TOKEN)
+        if: ${{ github.event.pull_request && (github.event.pull_request.head.repo.full_name != github.repository) && secrets.REPO_WRITE_TOKEN && (contains(github.event.pull_request.labels.*.name, 'autofix-allow') || (github.event.pull_request.body && contains(github.event.pull_request.body, '[enable-autofix]')) ) }}
+        uses: actions/github-script@v6
+        with:
+          github-token: ${{ secrets.REPO_WRITE_TOKEN }}
+          script: |
+            const fs = require('fs');
+            const lint = fs.existsSync('lint-output.txt') ? fs.readFileSync('lint-output.txt', 'utf8').slice(0,4000) : 'No output';
+            const format = fs.existsSync('format-output.txt') ? fs.readFileSync('format-output.txt', 'utf8').slice(0,4000) : 'No output';
+            const result = fs.existsSync('result.txt') ? fs.readFileSync('result.txt', 'utf8').trim() : 'fail';
+            const prNumber = context.payload.pull_request.number;
+            const status = (result === 'ok') ? '✅ **Passed**' : '❌ **Issues found**';
+            const markerStart = '<!-- deliveryterms-pr-lint:start -->';
+            const markerEnd = '<!-- deliveryterms-pr-lint:end -->';
+            const badge = (result === 'ok') ? '![JS Lint](https://img.shields.io/badge/JS%20Lint-Passed-brightgreen)' : '![JS Lint](https://img.shields.io/badge/JS%20Lint-Failed-red)';
+            let runUrl = `https://github.com/${context.repo.owner}/${context.repo.repo}/actions/runs/${process.env.GITHUB_RUN_ID}`;
+            try {
+              const jobsResp = await github.rest.actions.listJobsForWorkflowRun({ owner: context.repo.owner, repo: context.repo.repo, run_id: process.env.GITHUB_RUN_ID });
+              const jobs = jobsResp.data.jobs || [];
+              const job = jobs.find(j => j.name && j.name.toLowerCase().includes('lint'));
+              if (job && job.html_url) runUrl = job.html_url;
+            } catch (e) {}
+            const linkedBadge = `[${badge}](${runUrl})`;
+            const summary = `${linkedBadge}  \n**JS Lint & Format:** ${status}  \n\n<details>\n<summary>Details (truncated)</summary>\n\n**ESLint excerpt:**\n\n\`\`\`\n${lint}\n\`\`\`\n\n**Prettier excerpt:**\n\n\`\`\`\n${format}\n\`\`\`\n\n</details>`;
+            const { data: pr } = await github.rest.pulls.get({ owner: context.repo.owner, repo: context.repo.repo, pull_number: prNumber });
+            const body = pr.body || '';
+            const startIdx = body.indexOf(markerStart);
+            if (startIdx !== -1) {
+              const endIdx = body.indexOf(markerEnd, startIdx);
+              let newBody;
+              if (endIdx !== -1) {
+                newBody = body.slice(0, startIdx) + markerStart + '\n' + summary + '\n' + markerEnd + body.slice(endIdx + markerEnd.length);
+              } else {
+                newBody = body.slice(0, startIdx) + markerStart + '\n' + summary + '\n' + markerEnd;
+              }
+              await github.rest.pulls.update({ owner: context.repo.owner, repo: context.repo.repo, pull_number: prNumber, body: newBody });
+            } else {
+              const newBody = markerStart + '\n' + summary + '\n' + markerEnd + '\n\n' + body;
+              await github.rest.pulls.update({ owner: context.repo.owner, repo: context.repo.repo, pull_number: prNumber, body: newBody });
+            }
+            await github.rest.issues.createComment({ owner: context.repo.owner, repo: context.repo.repo, issue_number: prNumber, body: `Applied compact lint summary via REPO_WRITE_TOKEN (opt-in). If you did not opt-in, remove the label \`autofix-allow\` or the marker \`[enable-autofix]\`.` });
+
       - name: Fail job if issues found
         if: ${{ steps['Run lint and format check (capture output)'].outcome == 'success' && (contains(fromJSON('[]'), 'noop') == false) }}
         run: |
