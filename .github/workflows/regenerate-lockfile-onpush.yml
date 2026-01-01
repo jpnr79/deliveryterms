@@ -49,7 +49,13 @@ jobs:
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add package-lock.json
           git commit -m "chore(ci): update package-lock.json"
-          git push https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }} HEAD:${{ github.ref_name }}
+
+          # Ensure we have latest remote refs and try to integrate remote changes
+          BRANCH=${{ github.ref_name }}
+          git fetch origin $BRANCH --depth=1 || true
+          git pull --rebase origin $BRANCH || true
+
+          git push https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }} HEAD:${BRANCH}
 
       - name: Create PR comment with run URL
         if: steps.gitdiff.outputs.changed == 'true'

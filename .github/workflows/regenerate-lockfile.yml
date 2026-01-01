@@ -60,10 +60,15 @@ jobs:
           git add package-lock.json
           git commit -m "chore(ci): update package-lock.json"
 
+          # Ensure we have latest remote refs and try to integrate remote changes
+          BRANCH=${{ github.event.inputs.branch }}
+          git fetch origin $BRANCH --depth=1 || true
+          git pull --rebase origin $BRANCH || true
+
           # Try pushing using the built-in GITHUB_TOKEN first
           echo "Attempting push using GITHUB_TOKEN..."
           set +e
-          git push https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }} HEAD:${{ github.event.inputs.branch }}
+          git push https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }} HEAD:${BRANCH}
           PUSH_RC=$?
           set -e
 
