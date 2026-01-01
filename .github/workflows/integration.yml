@@ -6,7 +6,12 @@ on:
 
 jobs:
   integration:
-    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        runner:
+          - ubuntu-latest
+          - [self-hosted, linux]
+    runs-on: ${{ matrix.runner }}
     services:
       mysql:
         image: mysql:8.0
