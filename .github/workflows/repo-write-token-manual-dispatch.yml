@@ -28,7 +28,7 @@ jobs:
         with:
           github-token: ${{ secrets.REPO_WRITE_TOKEN }}
           script: |
-            const prNumber = parseInt(inputs.pr_number || context.payload.inputs.pr_number, 10) || null;
+            const prNumber = parseInt((context.payload.inputs && context.payload.inputs.pr_number), 10) || null;
             if (!prNumber) throw new Error('pr_number input is required');
             const markerStart = '<!-- repo-write-token-manual:start -->';
             const markerEnd = '<!-- repo-write-token-manual:end -->';
