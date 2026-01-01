@@ -409,7 +409,7 @@ class PluginDeliverytermsGenerate extends CommonDBTM {
         }
         echo "                  <th style='max-width:220px;min-width:140px;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;'>".__('Name', 'deliveryterms')."</th>";
         echo "                  <th style='width:160px'>".__('Creation Date', 'deliveryterms')."</th>";
-        echo "                  <th style='width:64px'>".__('Download', 'deliveryterms')."</th>";
+        echo "                  <th style='width:320px'>".__('Download', 'deliveryterms')."</th>";
         echo "                  <th style='width:140px'>".__('Creator', 'deliveryterms')."</th>";
         echo "                  <th>".__('Action', 'deliveryterms')."</th>";
         echo "              </tr>";
@@ -454,7 +454,13 @@ class PluginDeliverytermsGenerate extends CommonDBTM {
             }
             echo "</td>";
             echo "<td>".htmlescape($exports['gen_date'])."</td>";
-            echo "<td>".($Doc->fields ? $Doc->getDownloadLink() : '-')."</td>";
+            if ($Doc->fields) {
+                $filename = htmlescape($Doc->getField('filename') ?: $Doc->getField('name') ?: '');
+                $dlHref = '?download=' . htmlescape($exports['document_id']);
+                echo "<td style='width:320px;'><a href='".$dlHref."' title='".$filename."'>".$filename."</a></td>";
+            } else {
+                echo "<td>-</td>";
+            }
             echo "<td>".htmlescape($exports['author'])."</td>";
             echo "<td>";
             echo "<button type='button' class='btn btn-sm btn-outline-success send-email-btn' 
