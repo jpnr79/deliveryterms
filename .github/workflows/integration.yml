@@ -9,11 +9,8 @@ jobs:
     concurrency:
       group: ${{ github.workflow }}-${{ github.ref }}
       cancel-in-progress: true
-    strategy:
-      matrix:
-        self_hosted: [self-hosted]
-        os: [linux]
-    runs-on: [${{ matrix.self_hosted }}, ${{ matrix.os }}]
+    runs-on: self-hosted
+    strategy: {}
     services:
       mysql:
         image: mysql:8.0
@@ -40,7 +37,7 @@ jobs:
           extensions: mbstring, gd, mysqli
 
       - name: Self-hosted preflight checks
-        if: matrix.self_hosted == 'self-hosted'
+        if: contains(runner.labels, 'self-hosted')
         run: |
           echo "Running self-hosted preflight checks"
           # Basic tooling checks
