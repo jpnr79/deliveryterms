@@ -1,0 +1,33 @@
+name: Self-hosted Runner Test
+
+on:
+  workflow_dispatch: {}
+
+jobs:
+  self-hosted-test:
+    name: Self-hosted runner smoke test
+    runs-on: [self-hosted, linux]
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Show runner info
+        run: |
+          echo "GITHUB_RUN_ID=${GITHUB_RUN_ID}" || true
+          uname -a
+          whoami
+          id
+          echo "Available disks:"
+          df -h | sed -n '1,200p'
+
+      - name: Run a simple command
+        run: |
+          echo "Listing workspace and runner files"
+          ls -la
+          echo "Checking network to GitHub API"
+          curl -sSf -I https://api.github.com || true
+
+      - name: Report success
+        run: |
+          echo "Self-hosted runner test completed successfully"
