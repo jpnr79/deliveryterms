@@ -606,15 +606,19 @@ class PluginDeliverytermsGenerate extends CommonDBTM {
             $doc_name = str_replace(' ', '_', $title)."-".date('dmY').'.pdf';
             $output = $html2pdf->output();
 
-            // Ensure PDFs are stored in PDF/TERMS instead of creating a directory per protocol
+            // Write the file into GLPI upload root (Document->moveUploadedDocument forbids slashes in filename)
+            $upload_path = GLPI_UPLOAD_DIR . '/' . $doc_name;
+            file_put_contents($upload_path, $output);
+
+            // Also keep a copy in PDF/TERMS for organizational purpose (not used by Document->add)
             $pdf_terms_dir = GLPI_UPLOAD_DIR . '/PDF/TERMS';
             if (!is_dir($pdf_terms_dir)) {
                 @mkdir($pdf_terms_dir, 0755, true);
             }
-            file_put_contents($pdf_terms_dir . '/' . $doc_name, $output);
+            @copy($upload_path, $pdf_terms_dir . '/' . $doc_name);
 
-            // Store relative path (PDF/TERMS/filename.pdf) so GLPI can attach it as an uploaded file
-            $doc_id = self::createDoc('PDF/TERMS/'. $doc_name, $owner, $notes, $title, $id); 
+            // Create Document using the filename only (no slashes) so GLPI can move it securely
+            $doc_id = self::createDoc($doc_name, $owner, $notes, $title, $id); 
             
             if ($email_mode == 1) {
                 self::sendMail($doc_id, $send_user, $email_subject, $email_content, $recipients, $id);
