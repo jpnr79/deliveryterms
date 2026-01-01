@@ -46,14 +46,15 @@
     container.appendChild(info);
     ta.parentNode.insertBefore(container, ta);
 
-    var editorInstance = null;
+    // use a global ref used by submit/sync logic
+    window._deliveryterms_tiptap_editor = null;
 
     toggle.addEventListener('change', function () {
       if (this.checked) {
         // initialize editor and hide textarea
         initEditor(ta).then(function (ed) {
           if (ed) {
-            editorInstance = ed;
+            window._deliveryterms_tiptap_editor = ed;
             ta.style.display = 'none';
           } else {
             toggle.checked = false;
@@ -64,6 +65,7 @@
         // sync content and show textarea
         if (window._deliveryterms_tiptap_editor) {
           ta.value = window._deliveryterms_tiptap_editor.getHTML() || ta.value;
+          window._deliveryterms_tiptap_editor = null;
         }
         ta.style.display = '';
       }
