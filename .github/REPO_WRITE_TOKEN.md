@@ -29,3 +29,9 @@ Notes
 -----
 - This repository adds a request/label opt-in flow before using `REPO_WRITE_TOKEN` to avoid silent or unexpected cross-repo updates.
 - If you prefer to disable this feature entirely, delete the `REPO_WRITE_TOKEN` secret and the opt-in steps will not run for fork PRs.
+
+Smoke test
+----------
+- There is a smoke test workflow that runs when the `autofix-allow` label is added to a PR originating from a fork and the `REPO_WRITE_TOKEN` secret exists.
+- The smoke test updates the PR body with a short marker and posts an audit comment showing the PAT was exercised. To run the smoke test: add the `autofix-allow` label to the PR.
+- The smoke test will not run unless the repo secret `REPO_WRITE_TOKEN` is present and the PR explicitly opts in.
