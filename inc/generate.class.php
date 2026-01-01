@@ -713,7 +713,27 @@ class PluginDeliverytermsGenerate extends CommonDBTM {
         
         $req = $DB->request('glpi_documents', ['id' => $doc_id]);
         if ($row = $req->current()) {
-            $nmail->addAttachment(GLPI_VAR_DIR . '/' . $row["filepath"], $row["filename"]);
+            $docFilepath = $row["filepath"] ?? '';
+            $docFilename = $row["filename"] ?? '';
+            $candidate = rtrim(GLPI_VAR_DIR . '/' . $docFilepath, '/');
+
+            // If filepath looks like a directory, append the filename
+            if (is_dir($candidate) && !empty($docFilename)) {
+                $candidate = $candidate . '/' . $docFilename;
+            }
+
+            // Normalise relative ./ prefixes
+            $candidate = preg_replace('#^\./+#', '', $candidate);
+
+            if (!empty($candidate) && is_readable($candidate) && is_file($candidate)) {
+                try {
+                    $nmail->addAttachment($candidate, $docFilename);
+                } catch (\Throwable $e) {
+                    error_log('[deliveryterms] Failed to attach document: ' . $e->getMessage());
+                }
+            } else {
+                error_log('[deliveryterms] Attachment skipped; file not found or unreadable: ' . GLPI_VAR_DIR . '/' . $docFilepath);
+            }
         }
         
         // Sanitize recipients and add safely to avoid RFC errors
@@ -827,7 +847,25 @@ class PluginDeliverytermsGenerate extends CommonDBTM {
         if (!empty($doc_id)) {
             $req = $DB->request('glpi_documents', ['id' => $doc_id]);
             if ($row = $req->current()) {
-                $nmail->addAttachment(GLPI_VAR_DIR . '/' . $row["filepath"], $row["filename"]);
+                $docFilepath = $row["filepath"] ?? '';
+                $docFilename = $row["filename"] ?? '';
+                $candidate = rtrim(GLPI_VAR_DIR . '/' . $docFilepath, '/');
+
+                if (is_dir($candidate) && !empty($docFilename)) {
+                    $candidate = $candidate . '/' . $docFilename;
+                }
+
+                $candidate = preg_replace('#^\./+#', '', $candidate);
+
+                if (!empty($candidate) && is_readable($candidate) && is_file($candidate)) {
+                    try {
+                        $nmail->addAttachment($candidate, $docFilename);
+                    } catch (\Throwable $e) {
+                        error_log('[deliveryterms] Failed to attach document (sendOneMail): ' . $e->getMessage());
+                    }
+                } else {
+                    error_log('[deliveryterms] Attachment skipped (sendOneMail); file not found or unreadable: ' . GLPI_VAR_DIR . '/' . $docFilepath);
+                }
             }
         }
         
