@@ -1,0 +1,16 @@
+{
+  "name": "deliveryterms-e2e",
+  "version": "0.0.0",
+  "private": true,
+  "devDependencies": {
+    "@playwright/test": "^1.40.0",
+    "@tiptap/core": "^2.0.0",
+    "@tiptap/starter-kit": "^2.0.0",
+    "esbuild": "^0.19.0"
+  },
+  "scripts": {
+    "test:e2e": "playwright test",
+    "test:e2e:preview": "playwright test tests/e2e/preview.spec.js --reporter=list,html --output=playwright-results",
+    "build:editor": "esbuild js/tiptap_src.js --bundle --minify --sourcemap --outfile=public/js/tiptap_bundle.js"
+  }
+}

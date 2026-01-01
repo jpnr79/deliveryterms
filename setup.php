@@ -77,7 +77,8 @@ function plugin_init_deliveryterms(): void
     $PLUGIN_HOOKS['csrf_compliant']['deliveryterms'] = true;
     $PLUGIN_HOOKS['add_css']['deliveryterms']        = 'css/styles.css';
     // TinyMCE enhancements for table editing in plugin forms and preview helpers
-    $PLUGIN_HOOKS['add_javascript']['deliveryterms'] = ['js/deliveryterms_tinymce.js','js/preview.js'];
+    // Include the TipTap bundled build (production) and retain PoC wrapper for initialization
+    $PLUGIN_HOOKS['add_javascript']['deliveryterms'] = ['js/deliveryterms_tinymce.js','js/preview.js','public/js/tiptap_bundle.js','js/tiptap_poc.js'];
 
     // Register tabs for supported item types (fixed to 'User' only)
     foreach (['User'] as $target) {
