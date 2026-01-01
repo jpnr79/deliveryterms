@@ -132,6 +132,10 @@ jobs:
             npm i -D @playwright/test
           fi
 
+          # Run lint and format checks for JS sources
+          npm run lint
+          npm run format:check
+
           # Build the bundled TipTap editor so tests exercise bundled assets
           if npm run build:editor --silent; then
             echo "Editor build succeeded";

@@ -76,6 +76,12 @@ PHP 8.0.15
     - `npm ci`
     - `npm run build:editor` (this creates `public/js/tiptap_bundle.js`)
   - CI: The GitHub Actions workflow will use npm caching and the Playwright job installs npm deps; the workflow now executes `npm run build:editor` in CI before running the Playwright spec so the bundled editor is available during E2E. The CI build also performs a quick smoke check to verify `public/js/tiptap_bundle.js` exists and contains TipTap-related markers to catch build regressions early.
+
+- Linting & Formatting (ESLint + Prettier)
+  - Run ESLint on JS source and test files: `npm run lint` (fails on errors).
+  - Auto-fix lintable issues: `npm run lint:fix`.
+  - Format files with Prettier: `npm run format`.
+  - CI: The workflow runs `npm run lint` and `npm run format:check` during the Playwright job to enforce code style and catch issues early.
 - Start a local PHP server serving GLPI's public dir (example):
   - `nohup php -S 127.0.0.1:8000 -t /var/www/glpi/public &`
 - Run the headless script (example):

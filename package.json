@@ -6,11 +6,19 @@
     "@playwright/test": "^1.40.0",
     "@tiptap/core": "^2.0.0",
     "@tiptap/starter-kit": "^2.0.0",
-    "esbuild": "^0.19.0"
+    "esbuild": "^0.19.0",
+    "eslint": "^8.50.0",
+    "eslint-plugin-prettier": "^4.2.1",
+    "eslint-config-prettier": "^9.0.1",
+    "prettier": "^2.9.0"
   },
   "scripts": {
     "test:e2e": "playwright test",
     "test:e2e:preview": "playwright test tests/e2e/preview.spec.js --reporter=list,html --output=playwright-results",
-    "build:editor": "esbuild js/tiptap_src.js --bundle --minify --sourcemap --outfile=public/js/tiptap_bundle.js"
+    "build:editor": "esbuild js/tiptap_src.js --bundle --minify --sourcemap --outfile=public/js/tiptap_bundle.js",
+    "lint": "eslint 'js/**/*.js' 'tests/e2e/**/*.js' --ext .js",
+    "lint:fix": "eslint 'js/**/*.js' 'tests/e2e/**/*.js' --ext .js --fix",
+    "format": "prettier --write \"js/**/*.js\" \"tests/e2e/**/*.js\"",
+    "format:check": "prettier --check \"js/**/*.js\" \"tests/e2e/**/*.js\""
   }
 }
