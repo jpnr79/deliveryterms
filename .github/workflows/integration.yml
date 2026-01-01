@@ -183,14 +183,55 @@ jobs:
             test-results
             playwright-report/**
             playwright-results/**
-      - name: Update PR(s) with artifacts link (if applicable)
+      - name: Download Playwright artifacts and extract HTML report (if present)
+        if: ${{ always() && secrets.GLPI_UI_USER && secrets.GLPI_PASS && secrets.GLPI_TEMPLATE_ID }}
+        uses: actions/download-artifact@v4
+        with:
+          name: playwright-preview-artifacts
+          path: tmp_artifacts
+
+      - name: Extract HTML report and upload single-file artifact
+        if: ${{ always() && secrets.GLPI_UI_USER && secrets.GLPI_PASS && secrets.GLPI_TEMPLATE_ID }}
+        run: |
+          if [ -f tmp_artifacts/playwright-report/index.html ]; then
+            mkdir -p extracted_report
+            cp tmp_artifacts/playwright-report/index.html extracted_report/index.html
+            echo "Found HTML report: extracted_report/index.html"
+          else
+            echo "No HTML report found in artifacts"
+          fi
+
+      - name: Upload HTML report artifact (if present)
+        if: ${{ always() && secrets.GLPI_UI_USER && secrets.GLPI_PASS && secrets.GLPI_TEMPLATE_ID }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-html-report
+          path: extracted_report/index.html
+
+      - name: Update PR(s) with artifacts link (direct artifact link if available)
         if: ${{ always() && secrets.GLPI_UI_USER && secrets.GLPI_PASS && secrets.GLPI_TEMPLATE_ID }}
         uses: actions/github-script@v6
         with:
           script: |
             const runId = process.env.GITHUB_RUN_ID;
-            const artifactsUrl = `https://github.com/${context.repo.owner}/${context.repo.repo}/actions/runs/${runId}/artifacts`;
+            const artifactsPageUrl = `https://github.com/${context.repo.owner}/${context.repo.repo}/actions/runs/${runId}/artifacts`;
             const commitSha = process.env.GITHUB_SHA;
+
+            // Attempt to find the specific artifact for this run (prefer standalone HTML report artifact)
+            let directArtifactUrl = null;
+            try {
+              const artifactsResp = await github.rest.actions.listWorkflowRunArtifacts({ owner: context.repo.owner, repo: context.repo.repo, run_id: runId });
+              const artifacts = artifactsResp.data.artifacts || [];
+              const htmlArtifact = artifacts.find(a => a.name === 'playwright-html-report');
+              const previewArtifact = artifacts.find(a => a.name === 'playwright-preview-artifacts');
+              const artifact = htmlArtifact || previewArtifact;
+              if (artifact) {
+                // Use the archive_download_url which will trigger a download when accessed by an authenticated user
+                directArtifactUrl = artifact.archive_download_url; // e.g., https://api.github.com/repos/.../actions/artifacts/{id}/zip
+              }
+            } catch (e) {
+              console.log('Could not list artifacts for run:', e.message || e);
+            }
 
             // Find PRs associated with this commit
             const prsResp = await github.rest.repos.listPullRequestsAssociatedWithCommit({ owner: context.repo.owner, repo: context.repo.repo, commit_sha: commitSha });
@@ -203,7 +244,13 @@ jobs:
               const body = prData.body || '';
               const markerStart = '<!-- deliveryterms-artifacts:start -->';
               const markerEnd = '<!-- deliveryterms-artifacts:end -->';
-              const summary = `Artifacts: [playwright-preview-artifacts](${artifactsUrl}) (includes HTML report, videos and traces)`;
+
+              let summary;
+              if (directArtifactUrl) {
+                summary = `Artifacts: [download playwright-preview-artifacts](${directArtifactUrl}) (direct ZIP download of HTML report, videos and traces)`;
+              } else {
+                summary = `Artifacts: [playwright-preview-artifacts](${artifactsPageUrl}) (includes HTML report, videos and traces)`;
+              }
 
               if (body.indexOf(markerStart) !== -1) {
                 const startIdx = body.indexOf(markerStart);
